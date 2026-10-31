@@ -16,7 +16,7 @@ bash scripts/complete-m1.sh
 
 This uses the pinned Node runtime (including the existing Homebrew Node 22 installation if needed), installs dependencies, generates missing Android/iOS folders in a temporary project without replacing app source, generates localization, formats source, and runs checks/builds. It stops at the first failure and saves terminal output to `.cache/m1-verification.log`. Flutter, registry access, Android SDK, macOS/Xcode and a running Docker daemon are required. The scripts do not upgrade toolchains, commit files, provision services or publish applications.
 
-Setup and verification can also run separately with `bash scripts/setup-m1.sh` and `bash scripts/verify-m1.sh`. Verification uses lockfiles and check-only formatting. The container smoke test uses the separate `maydon-m1-check` Compose project and cleans up its containers; existing development volumes are retained. Local ports 3000, 5432 and 6379 must be available. Full Gitleaks/CI and dependency advisory review remain required before milestone acceptance.
+Setup and verification can also run separately with `bash scripts/setup-m1.sh` and `bash scripts/verify-m1.sh`. Verification uses lockfiles and check-only formatting. The container smoke test uses the separate `maydon-m1-check` Compose project and cleans up its containers; existing development volumes are retained. Verification allocates free host ports through infra/verification.env, avoiding collisions with existing local services. Full Gitleaks/CI and dependency advisory review remain required before milestone acceptance.
 
 ## Complete M1 in an environment with working toolchains
 

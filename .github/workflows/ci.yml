@@ -17,7 +17,7 @@ jobs:
       - run: node scripts/check-foundation.mjs
       - run: node scripts/check-localization.mjs
       - run: node scripts/check-secrets.mjs
-      - run: docker compose -f infra/compose.yaml config --quiet
+      - run: docker compose --env-file infra/verification.env -f infra/compose.yaml config --quiet
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -37,17 +37,17 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm run openapi
-      - run: docker compose -f infra/compose.yaml build
+      - run: docker compose --env-file infra/verification.env -f infra/compose.yaml build
       - name: Smoke test local containers
         run: |
-          docker compose -f infra/compose.yaml up -d --wait
-          node scripts/smoke-api.mjs
+          docker compose --env-file infra/verification.env -f infra/compose.yaml up -d --wait
+          docker compose --env-file infra/verification.env -f infra/compose.yaml exec -T api node scripts/smoke-api.mjs
       - name: Container diagnostics on failure
         if: failure()
-        run: docker compose -f infra/compose.yaml logs --no-color
+        run: docker compose --env-file infra/verification.env -f infra/compose.yaml logs --no-color
       - name: Stop local containers
         if: always()
-        run: docker compose -f infra/compose.yaml down
+        run: docker compose --env-file infra/verification.env -f infra/compose.yaml down
   flutter:
     runs-on: ubuntu-latest
     steps:

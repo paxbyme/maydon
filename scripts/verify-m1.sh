@@ -40,7 +40,7 @@ fi
 (cd apps/player && flutter build ios --no-codesign)
 
 # Use a dedicated Compose project; cleanup never removes existing development data.
-compose=(docker compose -p maydon-m1-check -f infra/compose.yaml)
+compose=(docker compose --env-file infra/verification.env -p maydon-m1-check -f infra/compose.yaml)
 cleanup() {
   result=$?
   trap - EXIT
@@ -50,5 +50,5 @@ cleanup() {
 }
 trap cleanup EXIT
 "${compose[@]}" up --build --wait -d
-npm run test:smoke
+"${compose[@]}" exec -T api node scripts/smoke-api.mjs
 printf '\nLocal M1 checks passed. Review dependency advisories and run full Gitleaks/CI before accepting M1.\n'
