@@ -1,0 +1,97 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "operationId": "getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Public process liveness; does not check dependencies",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/version": {
+      "get": {
+        "operationId": "getVersion",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Public service version",
+        "tags": [
+          "system"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "MAYDON API",
+    "description": "M1 public system endpoints. Business endpoints are not implemented.",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "VersionResponse": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "type": "string",
+            "example": "maydon-api"
+          },
+          "version": {
+            "type": "string",
+            "example": "0.1.0"
+          },
+          "apiVersion": {
+            "type": "string",
+            "example": "v1"
+          }
+        },
+        "required": [
+          "service",
+          "version",
+          "apiVersion"
+        ]
+      }
+    }
+  }
+}

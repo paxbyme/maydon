@@ -1,0 +1,9 @@
+name: maydon_api_client
+version: 0.1.0
+publish_to: none
+environment:
+  sdk: '>=3.9.2 <4.0.0'
+dependencies:
+  dio: 5.9.2
+dev_dependencies:
+  flutter_lints: 5.0.0

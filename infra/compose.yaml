@@ -1,0 +1,60 @@
+# Local development only; production is deliberately disabled by the application.
+services:
+  postgres:
+    image: postgres:16.11-bookworm
+    environment:
+      POSTGRES_USER: maydon
+      POSTGRES_PASSWORD: maydon_local_only
+      POSTGRES_DB: maydon
+    ports: ['127.0.0.1:5432:5432']
+    volumes: ['postgres_data:/var/lib/postgresql/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U maydon -d maydon']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  redis:
+    image: redis:7.4.2-bookworm
+    ports: ['127.0.0.1:6379:6379']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  api:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://maydon:maydon_local_only@postgres:5432/maydon
+      REDIS_URL: redis://redis:6379
+      DELIVERY_ADAPTER: local
+    ports: ['127.0.0.1:3000:3000']
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/api/v1/health').then(async r => { if (!r.ok || (await r.json()).status !== 'ok') process.exit(1); }).catch(() => process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+  worker:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+    command: ['node', 'apps/api/dist/src/worker.js']
+    environment:
+      NODE_ENV: development
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+volumes:
+  postgres_data:

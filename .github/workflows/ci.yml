@@ -1,0 +1,91 @@
+name: Foundation gates
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  repository:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: node scripts/check-foundation.mjs
+      - run: node scripts/check-localization.mjs
+      - run: node scripts/check-secrets.mjs
+      - run: docker compose -f infra/compose.yaml config --quiet
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Require resolved dependencies (M1 is incomplete without a lockfile)
+        run: test -f package-lock.json
+      - run: npm ci
+      - run: npm audit --audit-level=moderate
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm run openapi
+      - run: docker compose -f infra/compose.yaml build
+      - name: Smoke test local containers
+        run: |
+          docker compose -f infra/compose.yaml up -d --wait
+          node scripts/smoke-api.mjs
+      - name: Container diagnostics on failure
+        if: failure()
+        run: docker compose -f infra/compose.yaml logs --no-color
+      - name: Stop local containers
+        if: always()
+        run: docker compose -f infra/compose.yaml down
+  flutter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.5'
+          channel: stable
+      - name: Require reviewed lockfiles and player platform runners
+        run: |
+          for app in player owner admin; do test -f apps/$app/pubspec.lock; done
+          for package in localization design_system api_client; do test -f packages/$package/pubspec.lock; done
+          test -f apps/player/android/app/src/main/AndroidManifest.xml
+          test -d apps/player/ios/Runner.xcodeproj
+      - name: Resolve shared packages and generate localization
+        run: |
+          for package in localization design_system api_client; do
+            (cd packages/$package && flutter pub get --enforce-lockfile)
+          done
+          (cd packages/localization && flutter gen-l10n)
+      - name: Analyze, test and build apps
+        run: |
+          for app in player owner admin; do
+            (cd apps/$app && flutter pub get --enforce-lockfile && flutter analyze && flutter test && flutter build web)
+          done
+          for package in localization design_system api_client; do
+            (cd packages/$package && flutter analyze)
+          done
+          dart format --output=none --set-exit-if-changed apps/player/lib apps/player/test apps/owner/lib apps/owner/test apps/admin/lib apps/admin/test packages/api_client/lib/api_client.dart packages/design_system/lib/design_system.dart packages/localization/lib/localization.dart
+          (cd apps/player && flutter build apk --debug)
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.5'
+          channel: stable
+      - run: test -d apps/player/ios/Runner.xcodeproj
+      - run: cd packages/localization && flutter pub get --enforce-lockfile && flutter gen-l10n
+      - run: cd apps/player && flutter pub get --enforce-lockfile && flutter build ios --no-codesign
