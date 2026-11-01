@@ -244,6 +244,13 @@ packages:
       relative: true
     source: path
     version: "0.1.0"
+  maydon_design_system:
+    dependency: "direct dev"
+    description:
+      path: "../design_system"
+      relative: true
+    source: path
+    version: "0.1.0"
   maydon_localization:
     dependency: "direct main"
     description:

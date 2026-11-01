@@ -49,7 +49,7 @@
   "codeLabel": "Six-digit code",
   "confirm": "Confirm",
   "backToAccount": "Back to account",
-  "checkMessages": "If eligible, a message has been sent. Use the verification reference and code from that message.",
+  "checkMessages": "If eligible, check your messages for a verification reference and code.",
   "operationComplete": "Done. Your change has been confirmed.",
   "connectionError": "Unable to connect. Check your connection and try again.",
   "credentialsError": "Sign-in failed. Check your email and password.",

@@ -17,6 +17,8 @@ dependencies:
   maydon_localization:
     path: ../localization
 dev_dependencies:
+  maydon_design_system:
+    path: ../design_system
   flutter_test:
     sdk: flutter
   flutter_lints: 5.0.0

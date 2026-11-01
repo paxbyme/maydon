@@ -1,3 +1,4 @@
+import 'package:maydon_design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,6 +12,7 @@ Widget account(
 }) => ProviderScope(
   overrides: [sessionProvider.overrideWith((ref) => session)],
   child: MaterialApp(
+    theme: maydonTheme(),
     locale: locale,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
@@ -23,6 +25,27 @@ Widget account(
   ),
 );
 void main() {
+  testWidgets(
+    'session restoration disables sign-in including keyboard submission',
+    (tester) async {
+      var calls = 0;
+      final session = controller(MemoryCredentials(), (_) async {
+        calls++;
+        return jsonBody(tokens());
+      });
+      session.restoring = true;
+      await tester.pumpWidget(account(session));
+      final button = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Sign in'),
+      );
+      expect(button.onPressed, null);
+      expect(
+        tester.widget<TextFormField>(find.byType(TextFormField).first).enabled,
+        false,
+      );
+      expect(calls, 0);
+    },
+  );
   testWidgets(
     'invalid fields never submit and successful login shows verified account',
     (tester) async {

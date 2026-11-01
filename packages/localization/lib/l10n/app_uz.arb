@@ -49,7 +49,7 @@
   "codeLabel": "Olti xonali kod",
   "confirm": "Tasdiqlash",
   "backToAccount": "Hisobga qaytish",
-  "checkMessages": "Agar so‘rov mos bo‘lsa, xabar yuborildi. Xabardagi tasdiqlash raqami va koddan foydalaning.",
+  "checkMessages": "Agar so‘rov mos bo‘lsa, tasdiqlash raqami va kodini xabarlaringizdan tekshiring.",
   "operationComplete": "Tayyor. O‘zgarish tasdiqlandi.",
   "connectionError": "Ulanib bo‘lmadi. Internetni tekshirib, qayta urinib ko‘ring.",
   "credentialsError": "Kirish amalga oshmadi. Pochta va parolni tekshiring.",

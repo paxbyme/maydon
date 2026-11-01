@@ -11,9 +11,15 @@ const compose = [
   'infra/compose.yaml',
 ];
 async function enableAccessibility(page) {
+  await expect
+    .poll(
+      () => page.locator('flt-semantics-placeholder, flt-semantics').count(),
+      { timeout: 30000 },
+    )
+    .toBeGreaterThan(0);
   const activate = page.locator('flt-semantics-placeholder');
-  await activate.waitFor({ state: 'attached', timeout: 30000 });
-  await activate.evaluate((element) => element.click());
+  if (await activate.count())
+    await activate.evaluate((element) => element.click());
 }
 async function message(email) {
   let result;
@@ -136,8 +142,16 @@ for (const [index, app] of ['player', 'owner', 'admin'].entries()) {
     await expect(
       page.getByText('Почта подтверждена', { exact: true }),
     ).toBeVisible();
-    await page.reload();
-    await enableAccessibility(page);
+    const secondTab = await context.newPage();
+    await Promise.all([page.reload(), secondTab.goto(page.url())]);
+    await Promise.all([
+      enableAccessibility(page),
+      enableAccessibility(secondTab),
+    ]);
+    await expect(
+      secondTab.getByText('Почта подтверждена', { exact: true }),
+    ).toBeVisible();
+    await secondTab.close();
     await expect(
       page.getByText('Почта подтверждена', { exact: true }),
     ).toBeVisible();

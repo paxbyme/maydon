@@ -80,7 +80,9 @@ class _AccountPanelState extends ConsumerState<AccountPanel> {
     Future<void> Function() action, {
     bool validate = true,
   }) async {
-    if (_busy || (validate && !(_form.currentState?.validate() ?? false))) {
+    if (_busy ||
+        ref.read(sessionProvider).restoring ||
+        (validate && !(_form.currentState?.validate() ?? false))) {
       return;
     }
     setState(() {
@@ -211,7 +213,7 @@ class _AccountPanelState extends ConsumerState<AccountPanel> {
       padding: const EdgeInsets.only(bottom: 20),
       child: TextFormField(
         controller: c,
-        enabled: !_busy,
+        enabled: !_busy && !ref.watch(sessionProvider).restoring,
         keyboardType: keyboard,
         obscureText: secret && !_visiblePassword,
         autocorrect: !secret && keyboard != TextInputType.emailAddress,
@@ -493,7 +495,7 @@ class _AccountPanelState extends ConsumerState<AccountPanel> {
                   if (_enrollmentSecret != null) ...[
                     Text(s.mfaSecretHelp),
                     const SizedBox(height: 12),
-                    SelectableText(_enrollmentSecret!),
+                    SelectionArea(child: Text(_enrollmentSecret!)),
                     const SizedBox(height: 20),
                   ],
                   if ([

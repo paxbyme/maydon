@@ -93,7 +93,6 @@ jobs:
           done
           dart format --output=none --set-exit-if-changed apps/player/lib apps/player/test apps/owner/lib apps/owner/test apps/admin/lib apps/admin/test packages/api_client/lib/api_client.dart packages/design_system/lib packages/localization/lib/localization.dart packages/identity/lib packages/identity/test
           (cd packages/identity && flutter test)
-          (cd apps/player && flutter build apk --debug)
       - uses: actions/upload-artifact@v4
         with:
           name: web-apps
@@ -121,6 +120,16 @@ jobs:
         run: docker compose -p maydon-browser --env-file infra/verification.env -f infra/compose.yaml logs --no-color
       - if: always()
         run: docker compose -p maydon-browser --env-file infra/verification.env -f infra/compose.yaml down -v
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.5'
+          channel: stable
+      - run: cd packages/localization && flutter pub get --enforce-lockfile && flutter gen-l10n
+      - run: cd apps/player && flutter pub get --enforce-lockfile && flutter build apk --debug
   ios:
     runs-on: macos-latest
     steps:
