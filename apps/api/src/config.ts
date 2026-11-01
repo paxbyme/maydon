@@ -1,7 +1,7 @@
 export function validateEnvironment(env: NodeJS.ProcessEnv): number {
   if (env.NODE_ENV === 'production') {
     throw new Error(
-      'M1 foundation is not production-ready; production startup is disabled',
+      'Application is not production-ready; production startup is disabled',
     );
   }
   const value = env.PORT ?? '3000';

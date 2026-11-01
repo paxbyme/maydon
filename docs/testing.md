@@ -17,3 +17,9 @@ Required scenarios before launch:
 - Backup restore yields a working app with verified exclusion constraints.
 
 Load: proposed 100 active sessions; p95 search/availability <1 second, mutations <1.5 seconds excluding delivery. Exercise retries, worker restart, database failures, stale quotes and offline clients. Monitor error/latency, saturation, conflicts, outbox delay, verification failures and backup freshness. Record actual outcomes in milestone reports; never equate configured CI with executed CI.
+
+## Database and worker foundation
+
+Run `docker compose -p maydon-m2-test -f infra/compose.test.yaml up --build --abort-on-container-exit --exit-code-from tests` for fresh migrations and real PostgreSQL integrity/recovery tests. Clean up that isolated test project with `docker compose -p maydon-m2-test -f infra/compose.test.yaml down -v`. The test service uses no host ports and no persistent named volume. Direct test execution refuses any database without the `_test` suffix and explicit MAYDON_TEST_DATABASE=true.
+
+Coverage includes 50 distinct customers racing for one interval, booking/block races, half-open buffered occupancy, source/ledger consistency, atomic cancellation, immutable snapshots/audits, transactional outbox rollback, concurrent worker claims, expired lease fencing, retry/dead-letter behavior and scoped idempotency uniqueness. These are foundation tests; full authenticated booking/game journeys remain M7/M8 requirements.

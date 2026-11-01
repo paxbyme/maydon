@@ -22,7 +22,14 @@
     "localization:check": "node scripts/check-localization.mjs",
     "foundation:check": "node scripts/check-foundation.mjs",
     "preflight": "node scripts/preflight.mjs",
-    "test:smoke": "node scripts/smoke-api.mjs"
+    "test:smoke": "node scripts/smoke-api.mjs",
+    "db:generate": "npm run db:generate --workspace @maydon/api",
+    "db:validate": "npm run db:validate --workspace @maydon/api",
+    "db:format": "npm run db:format --workspace @maydon/api",
+    "db:migrate": "npm run db:migrate --workspace @maydon/api",
+    "db:diff": "npm run db:diff --workspace @maydon/api",
+    "test:integration": "npm run test:integration --workspace @maydon/api",
+    "db:format:check": "node scripts/check-prisma-format.mjs"
   },
   "devDependencies": {
     "prettier": "3.6.2"
@@ -33,6 +40,9 @@
     },
     "@nestjs/swagger": {
       "js-yaml": "5.5.0"
+    },
+    "@prisma/config": {
+      "deepmerge-ts": "8.0.0"
     }
   }
 }

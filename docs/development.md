@@ -2,7 +2,7 @@
 
 ## Current state
 
-M0 is documented. M1 is an incomplete, unverified foundation; see [M1 results](milestones/M1.md). There are no functioning booking/game/authentication features. Missing lockfiles and native runners are deliberate failed gates, not files to bypass in CI.
+M0 is documented. M1 has passing local backend/Android checks and is awaiting full CI acceptance; see [M1 results](milestones/M1.md). There are no functioning booking/game/authentication features. Missing lockfiles and native runners are deliberate failed gates, not files to bypass in CI.
 
 Provisional pins: Node 22.23.1, NestJS 11.2.8, TypeScript 5.9.3, Flutter 3.35.5 / Dart 3.9.2. Node 22.23.1 was executable locally; the other pins require dependency resolution and a clean build before acceptance. Current Nest documentation describes newer releases; these pins are a conservative starting set, not a claim that the newest versions were tested. Review security advisories before accepting pins. Prisma/PostgreSQL integration arrives in M2; Redis/FCM/S3 adapters arrive at their respective milestones.
 
@@ -60,3 +60,9 @@ The dependency-free checks do not prove application correctness. ARB placeholder
 Copy `.env.example` only for local reference; the backend currently reads the process environment (it does not automatically load dotenv). Compose supplies its own local configuration. Production startup is explicitly rejected until production gates are implemented. Never expose development Compose ports or credentials publicly. No refresh credentials go into browser storage.
 
 Official references: [Node release support](https://nodejs.org/en/about/previous-releases), [Nest migration/runtime requirements](https://docs.nestjs.com/migration-guide), [Flutter archive](https://docs.flutter.dev/install/archive).
+
+## M2 database and worker
+
+Compose runs a dedicated migration service before starting API and worker. The worker currently delivers only in-app outbox events. `npm run db:generate` generates Prisma models, `npm run db:format` formats the schema, and `npm run db:migrate` deploys reviewed SQL migrations to DATABASE_URL. Prisma expects PostgreSQL and requires OpenSSL in Linux containers, included in the Dockerfile.
+
+See [database](database.md), [outbox](outbox.md) and [testing](testing.md) for invariants and isolated integration commands. No business data seeding or production credentials are included.

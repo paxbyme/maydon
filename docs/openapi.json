@@ -48,7 +48,7 @@
   },
   "info": {
     "title": "MAYDON API",
-    "description": "M1 public system endpoints. Business endpoints are not implemented.",
+    "description": "M2 public system endpoints. Business endpoints are not implemented.",
     "version": "0.1.0",
     "contact": {}
   },
