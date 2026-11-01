@@ -370,7 +370,9 @@ export class AuthService {
       csrf,
       expiresIn: 900,
       expiresAt: session.expiresAt,
-      mfaRequired: roles.includes('ADMIN') && !session.mfaVerifiedAt,
+      mfaRequired:
+        (roles.includes('ADMIN') || !!user.mfaEnabledAt) &&
+        !session.mfaVerifiedAt,
       user: publicUser(user),
     };
   }

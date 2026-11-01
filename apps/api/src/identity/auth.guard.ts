@@ -33,7 +33,8 @@ export class AccessGuard implements CanActivate {
       throw new UnauthorizedException();
     request.principal = await this.auth.authenticate(authorization.slice(7));
     if (
-      request.principal.roles.includes('ADMIN') &&
+      (request.principal.roles.includes('ADMIN') ||
+        !!request.principal.user.mfaEnabledAt) &&
       !request.principal.session.mfaVerifiedAt &&
       !this.reflector.getAllAndOverride(pendingKey, targets)
     )

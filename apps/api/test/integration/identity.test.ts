@@ -185,7 +185,8 @@ test('admin MFA is mandatory, encrypted and replay protected', async () => {
     .post('/api/v1/auth/login')
     .send({ email, password, client: 'mobile' })
     .expect(200);
-  const bearer = `Bearer ${login.body.accessToken}`;
+  access = login.body.accessToken;
+  const bearer = `Bearer ${access}`;
   assert.equal(login.body.mfaRequired, true);
   const denied = await request(app.getHttpServer())
     .patch('/api/v1/auth/me')
@@ -303,7 +304,13 @@ test('phone verification rejects another account and locks after five wrong code
     .post('/api/v1/auth/login')
     .send({ email, password, client: 'mobile' })
     .expect(200);
-  const bearer = `Bearer ${login.body.accessToken}`;
+  assert.equal(login.body.mfaRequired, true);
+  await request(app.getHttpServer())
+    .patch('/api/v1/auth/me')
+    .set('Authorization', `Bearer ${login.body.accessToken}`)
+    .send({ locale: 'en' })
+    .expect(403);
+  const bearer = `Bearer ${access}`;
   await request(app.getHttpServer())
     .post('/api/v1/auth/phone/request')
     .set('Authorization', bearer)
@@ -312,7 +319,7 @@ test('phone verification rejects another account and locks after five wrong code
   const message = await challenge('VERIFY_PHONE');
   const { AuthService } = await import('../../src/identity/auth.service');
   const service = app.get(AuthService);
-  const principal = await service.authenticate(login.body.accessToken);
+  const principal = await service.authenticate(access);
   await assert.rejects(
     service.verifyPhone(
       { ...principal, user: { ...principal.user, id: randomUUID() } },
