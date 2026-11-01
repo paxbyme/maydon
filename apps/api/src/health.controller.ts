@@ -1,3 +1,4 @@
+import { Public } from './identity/auth.guard';
 import { Controller, Get } from '@nestjs/common';
 import {
   ApiOkResponse,
@@ -19,6 +20,7 @@ export class VersionResponse {
   apiVersion = 'v1';
 }
 
+@Public()
 @ApiTags('system')
 @Controller()
 export class HealthController {

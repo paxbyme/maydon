@@ -44,6 +44,9 @@ services:
       context: ..
       dockerfile: infra/Dockerfile.api
     environment:
+      AUTH_SECRET: ${AUTH_SECRET:?Generate a local AUTH_SECRET before starting}
+      WEB_ORIGINS: ${WEB_ORIGINS:-http://localhost:5173,http://localhost:5174,http://localhost:5175}
+      DEV_DELIVERY_DIR: /app/dev-mailbox
       NODE_ENV: development
       DATABASE_URL: postgresql://maydon:maydon_local_only@postgres:5432/maydon
       REDIS_URL: redis://redis:6379
@@ -71,6 +74,10 @@ services:
       dockerfile: infra/Dockerfile.api
     command: ['node', 'apps/api/dist/src/worker.js']
     environment:
+      DELIVERY_ADAPTER: local
+      AUTH_SECRET: ${AUTH_SECRET:?Generate a local AUTH_SECRET before starting}
+      WEB_ORIGINS: ${WEB_ORIGINS:-http://localhost:5173,http://localhost:5174,http://localhost:5175}
+      DEV_DELIVERY_DIR: /app/dev-mailbox
       NODE_ENV: development
       DATABASE_URL: postgresql://maydon:maydon_local_only@postgres:5432/maydon
     depends_on:

@@ -1,3 +1,4 @@
+import { SecurityKeys } from './identity/security-keys';
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -10,6 +11,11 @@ export async function createApp() {
     logger: ['error', 'warn'],
   });
   app.setGlobalPrefix('api/v1');
+  app.enableCors({
+    origin: app.get(SecurityKeys).allowedOrigins,
+    credentials: true,
+    exposedHeaders: ['X-Request-Id'],
+  });
   app.use(requestIdMiddleware);
   app.useGlobalFilters(new ApiExceptionFilter());
   app.useGlobalPipes(
@@ -29,9 +35,10 @@ export function createDocument(app: Awaited<ReturnType<typeof createApp>>) {
     new DocumentBuilder()
       .setTitle('MAYDON API')
       .setDescription(
-        'M2 public system endpoints. Business endpoints are not implemented.',
+        'Identity and scoped access APIs; reservation and game endpoints are pending.',
       )
       .setVersion('0.1.0')
+      .addBearerAuth()
       .build(),
   );
 }

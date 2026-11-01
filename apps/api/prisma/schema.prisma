@@ -73,32 +73,39 @@ enum DeliveryChannel {
 }
 
 model User {
-  id               String                 @id @default(uuid()) @db.Uuid
-  email            String                 @unique @db.VarChar(254)
-  passwordHash     String
-  displayName      String                 @db.VarChar(100)
-  locale           Locale                 @default(uz)
-  emailVerifiedAt  DateTime?              @db.Timestamptz(3)
-  phone            String?                @unique @db.VarChar(20)
-  phoneVerifiedAt  DateTime?              @db.Timestamptz(3)
-  createdAt        DateTime               @default(now()) @db.Timestamptz(3)
-  updatedAt        DateTime               @updatedAt @db.Timestamptz(3)
-  deletedAt        DateTime?              @db.Timestamptz(3)
-  roles            UserRole[]
-  memberships      OwnerMembership[]
-  staff            StaffAssignment[]      @relation("StaffUser")
-  staffGranted     StaffAssignment[]      @relation("StaffGrantor")
-  bookings         Booking[]              @relation("BookingCustomer")
-  recordedBookings Booking[]              @relation("BookingActor")
-  blocks           ResourceBlock[]
-  bookingHistory   BookingStatusHistory[]
-  hostedGames      Game[]
-  participation    GameParticipant[]
-  invitations      Invitation[]
-  auditEvents      AuditEvent[]
-  notifications    Notification[]
-  deliveries       OutboxEvent[]
-  idempotency      IdempotencyRecord[]
+  disabledAt           DateTime?               @db.Timestamptz(3)
+  mfaSecretCiphertext  String?
+  mfaPendingCiphertext String?
+  mfaEnabledAt         DateTime?               @db.Timestamptz(3)
+  mfaLastUsedStep      Int?
+  sessions             Session[]
+  challenges           VerificationChallenge[]
+  id                   String                  @id @default(uuid()) @db.Uuid
+  email                String                  @unique @db.VarChar(254)
+  passwordHash         String
+  displayName          String                  @db.VarChar(100)
+  locale               Locale                  @default(uz)
+  emailVerifiedAt      DateTime?               @db.Timestamptz(3)
+  phone                String?                 @unique @db.VarChar(20)
+  phoneVerifiedAt      DateTime?               @db.Timestamptz(3)
+  createdAt            DateTime                @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime                @updatedAt @db.Timestamptz(3)
+  deletedAt            DateTime?               @db.Timestamptz(3)
+  roles                UserRole[]
+  memberships          OwnerMembership[]
+  staff                StaffAssignment[]       @relation("StaffUser")
+  staffGranted         StaffAssignment[]       @relation("StaffGrantor")
+  bookings             Booking[]               @relation("BookingCustomer")
+  recordedBookings     Booking[]               @relation("BookingActor")
+  blocks               ResourceBlock[]
+  bookingHistory       BookingStatusHistory[]
+  hostedGames          Game[]
+  participation        GameParticipant[]
+  invitations          Invitation[]
+  auditEvents          AuditEvent[]
+  notifications        Notification[]
+  deliveries           OutboxEvent[]
+  idempotency          IdempotencyRecord[]
 }
 
 model UserRole {
@@ -437,4 +444,55 @@ model Notification {
   createdAt   DateTime  @default(now()) @db.Timestamptz(3)
 
   @@index([userId, createdAt])
+}
+
+enum ChallengePurpose {
+  VERIFY_EMAIL
+  VERIFY_PHONE
+  RESET_PASSWORD
+}
+
+model Session {
+  id            String              @id @default(uuid()) @db.Uuid
+  userId        String              @db.Uuid
+  user          User                @relation(fields: [userId], references: [id], onDelete: Restrict)
+  csrfHash      String              @db.Char(64)
+  web           Boolean
+  mfaVerifiedAt DateTime?           @db.Timestamptz(3)
+  createdAt     DateTime            @default(now()) @db.Timestamptz(3)
+  lastUsedAt    DateTime            @default(now()) @db.Timestamptz(3)
+  expiresAt     DateTime            @db.Timestamptz(3)
+  revokedAt     DateTime?           @db.Timestamptz(3)
+  credentials   RefreshCredential[]
+
+  @@index([userId, revokedAt])
+  @@index([expiresAt])
+}
+
+model RefreshCredential {
+  id         String    @id @default(uuid()) @db.Uuid
+  sessionId  String    @db.Uuid
+  session    Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique @db.Char(64)
+  consumedAt DateTime? @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@index([sessionId])
+}
+
+model VerificationChallenge {
+  id         String           @id @default(uuid()) @db.Uuid
+  userId     String           @db.Uuid
+  purpose    ChallengePurpose
+  target     String           @db.VarChar(254)
+  codeHash   String           @db.Char(64)
+  attempts   Int              @default(0)
+  consumedAt DateTime?        @db.Timestamptz(3)
+  revokedAt  DateTime?        @db.Timestamptz(3)
+  expiresAt  DateTime         @db.Timestamptz(3)
+  createdAt  DateTime         @default(now()) @db.Timestamptz(3)
+  user       User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId, purpose, createdAt])
+  @@index([expiresAt])
 }

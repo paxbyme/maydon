@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { DeliveryChannel, OutboxEvent, Prisma } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
+import { LocalDeliveryAdapter } from '../delivery/local-delivery';
 import { DatabaseService } from '../database/database.module';
 
 export const MAX_ATTEMPTS = 8;
@@ -8,7 +9,10 @@ export const LEASE_SECONDS = 30;
 
 @Injectable()
 export class OutboxService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    @Optional() private readonly delivery?: LocalDeliveryAdapter,
+  ) {}
 
   // Caller supplies its business transaction: committing a booking cannot lose its event.
   enqueue(
@@ -88,8 +92,12 @@ export class OutboxService {
 
   async fail(event: OutboxEvent, code = 'DELIVERY_FAILED') {
     // Codes are allowlisted; never persist exception text or delivery credentials.
-    const lastErrorCode =
-      code === 'DELIVERY_ADAPTER_UNAVAILABLE' ? code : 'DELIVERY_FAILED';
+    const lastErrorCode = [
+      'DELIVERY_ADAPTER_UNAVAILABLE',
+      'MESSAGE_EXPIRED',
+    ].includes(code)
+      ? code
+      : 'DELIVERY_FAILED';
     const delaySeconds = Math.min(3600, 2 ** event.attempts);
     return this.db.outboxEvent.updateMany({
       where: {
@@ -99,7 +107,10 @@ export class OutboxService {
         leaseUntil: { gt: new Date() },
       },
       data: {
-        status: event.attempts >= MAX_ATTEMPTS ? 'DEAD' : 'PENDING',
+        status:
+          event.attempts >= MAX_ATTEMPTS || lastErrorCode === 'MESSAGE_EXPIRED'
+            ? 'DEAD'
+            : 'PENDING',
         availableAt: new Date(Date.now() + delaySeconds * 1000),
         leaseToken: null,
         leaseUntil: null,
@@ -112,13 +123,50 @@ export class OutboxService {
     const event = await this.claim();
     if (!event) return false;
     try {
-      if (event.channel !== 'IN_APP') {
+      if (event.channel === 'IN_APP') {
+        await this.deliverInbox(event);
+      } else if (!this.delivery || !['EMAIL', 'SMS'].includes(event.channel)) {
         await this.fail(event, 'DELIVERY_ADAPTER_UNAVAILABLE');
       } else {
-        await this.deliverInbox(event);
+        const valid = await this.db.outboxEvent.findFirst({
+          where: {
+            id: event.id,
+            status: 'PROCESSING',
+            leaseToken: event.leaseToken,
+            leaseUntil: { gt: new Date() },
+          },
+        });
+        if (!valid) return true;
+        const payload = valid.payload as { envelope?: string };
+        if (typeof payload.envelope !== 'string')
+          throw new Error('INVALID_DELIVERY_MESSAGE');
+        await this.delivery.deliver(valid.eventKey, payload.envelope);
+        await this.db.outboxEvent.updateMany({
+          where: {
+            id: valid.id,
+            status: 'PROCESSING',
+            leaseToken: event.leaseToken,
+            leaseUntil: { gt: new Date() },
+          },
+          data: {
+            status: 'DELIVERED',
+            deliveredAt: new Date(),
+            leaseUntil: null,
+            leaseToken: null,
+            lastErrorCode: null,
+          },
+        });
       }
-    } catch {
-      await this.fail(event);
+    } catch (error) {
+      await this.fail(
+        event,
+        error instanceof Error &&
+          ['MESSAGE_EXPIRED', 'DELIVERY_ADAPTER_UNAVAILABLE'].includes(
+            error.message,
+          )
+          ? error.message
+          : 'DELIVERY_FAILED',
+      );
     }
     return true;
   }
