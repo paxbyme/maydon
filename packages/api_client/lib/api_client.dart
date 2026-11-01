@@ -1,7 +1,8 @@
+export 'generated/api.g.dart';
+
 import 'package:dio/dio.dart';
 
-// M4 replaces feature transport calls with generated OpenAPI operations.
-// No credentials are persisted by this foundation.
+// Transport owns no persistent credentials; session storage belongs to the client.
 Dio createApiTransport(String baseUrl) {
   final uri = Uri.parse(baseUrl);
   if (!uri.hasAuthority || !['http', 'https'].contains(uri.scheme)) {

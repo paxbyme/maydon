@@ -5,11 +5,16 @@ import 'package:maydon_design_system/design_system.dart';
 import 'package:maydon_localization/localization.dart';
 
 void main() => runApp(const ProviderScope(child: MaydonApp()));
-
+final localeProvider = StateProvider<Locale?>((ref) => null);
+const paths = ['/', '/applications', '/publication', '/reports', '/audit'];
 final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
     routes: [
-      GoRoute(path: '/', builder: (context, state) => const FoundationPage()),
+      for (var i = 0; i < paths.length; i++)
+        GoRoute(
+          path: paths[i],
+          builder: (context, state) => WorkspacePage(index: i),
+        ),
     ],
   );
   ref.onDispose(router.dispose);
@@ -18,48 +23,67 @@ final routerProvider = Provider<GoRouter>((ref) {
 
 class MaydonApp extends ConsumerWidget {
   const MaydonApp({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) => MaterialApp.router(
+    debugShowCheckedModeBanner: false,
     onGenerateTitle: (context) => AppLocalizations.of(context)!.appName,
     theme: maydonTheme(),
+    locale: ref.watch(localeProvider),
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     routerConfig: ref.watch(routerProvider),
   );
 }
 
-class FoundationPage extends StatelessWidget {
-  const FoundationPage({super.key});
-
+class WorkspacePage extends ConsumerWidget {
+  const WorkspacePage({super.key, required this.index});
+  final int index;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final strings = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(title: Text(strings.appName)),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Semantics(
-                    header: true,
-                    child: Text(
-                      strings.adminTitle,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(strings.foundationMessage),
-                ],
-              ),
-            ),
-          ),
+    final destinations = [
+      MaydonDestination(strings.overview, Icons.dashboard_outlined),
+      MaydonDestination(strings.applications, Icons.assignment_outlined),
+      MaydonDestination(strings.publication, Icons.fact_check_outlined),
+      MaydonDestination(strings.reports, Icons.flag_outlined),
+      MaydonDestination(strings.audit, Icons.history),
+    ];
+    return MaydonShell(
+      title: strings.appName,
+      destinations: destinations,
+      selectedIndex: index,
+      onSelect: (value) => context.go(paths[value]),
+      actions: [
+        PopupMenuButton<String>(
+          tooltip: strings.language,
+          icon: const Icon(Icons.translate),
+          initialValue: Localizations.localeOf(context).languageCode,
+          onSelected: (value) =>
+              ref.read(localeProvider.notifier).state = Locale(value),
+          itemBuilder: (context) => const [
+            PopupMenuItem(value: 'uz', child: Text('O‘zbekcha')),
+            PopupMenuItem(value: 'ru', child: Text('Русский')),
+            PopupMenuItem(value: 'en', child: Text('English')),
+          ],
         ),
+        const SizedBox(width: 12),
+      ],
+      child: ListView(
+        padding: EdgeInsets.all(
+          MediaQuery.sizeOf(context).width < 600 ? 20 : 40,
+        ),
+        children: [
+          Text(
+            strings.adminTitle,
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: 24),
+          MaydonEmptyState(
+            icon: destinations[index].icon,
+            title: destinations[index].label,
+            message: strings.adminDetail,
+          ),
+        ],
       ),
     );
   }

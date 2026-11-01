@@ -38,6 +38,8 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm run openapi
+      - run: git diff --exit-code -- docs/openapi.json
+      - run: node scripts/generate-api-client.mjs --check
       - run: docker compose --env-file infra/verification.env -f infra/compose.yaml build
       - name: Smoke test local containers
         run: |
@@ -89,7 +91,7 @@ jobs:
           for package in localization design_system api_client; do
             (cd packages/$package && flutter analyze)
           done
-          dart format --output=none --set-exit-if-changed apps/player/lib apps/player/test apps/owner/lib apps/owner/test apps/admin/lib apps/admin/test packages/api_client/lib/api_client.dart packages/design_system/lib/design_system.dart packages/localization/lib/localization.dart
+          dart format --output=none --set-exit-if-changed apps/player/lib apps/player/test apps/owner/lib apps/owner/test apps/admin/lib apps/admin/test packages/api_client/lib/api_client.dart packages/design_system/lib packages/localization/lib/localization.dart
           (cd apps/player && flutter build apk --debug)
   ios:
     runs-on: macos-latest
