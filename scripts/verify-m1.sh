@@ -21,17 +21,18 @@ npm test
 npm run build
 npm run openapi
 
-for package in localization design_system api_client; do
+for package in localization design_system api_client identity; do
   (cd "packages/$package" && flutter pub get --enforce-lockfile)
 done
 (cd packages/localization && flutter gen-l10n)
 for app in player owner admin; do
   (cd "apps/$app" && flutter pub get --enforce-lockfile && flutter analyze && flutter test && flutter build web)
 done
-for package in localization design_system api_client; do
+for package in localization design_system api_client identity; do
   (cd "packages/$package" && flutter analyze)
 done
-dart format --output=none --set-exit-if-changed apps/player/lib apps/player/test apps/owner/lib apps/owner/test apps/admin/lib apps/admin/test packages/api_client/lib/api_client.dart packages/design_system/lib/design_system.dart packages/localization/lib/localization.dart
+dart format --output=none --set-exit-if-changed apps/player/lib apps/player/test apps/owner/lib apps/owner/test apps/admin/lib apps/admin/test packages/api_client/lib/api_client.dart packages/design_system/lib/design_system.dart packages/localization/lib/localization.dart packages/identity/lib packages/identity/test
+(cd packages/identity && flutter test)
 (cd apps/player && flutter build apk --debug)
 if [ "$(uname -s)" != Darwin ]; then
   echo 'M1 iOS verification requires macOS/Xcode. Run the iOS CI job before accepting M1.' >&2

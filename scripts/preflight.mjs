@@ -66,7 +66,7 @@ command(
 for (const path of [
   'package-lock.json',
   ...['player', 'owner', 'admin'].map((app) => `apps/${app}/pubspec.lock`),
-  ...['localization', 'design_system', 'api_client'].map(
+  ...['localization', 'design_system', 'api_client', 'identity'].map(
     (pkg) => `packages/${pkg}/pubspec.lock`,
   ),
   'apps/player/android/app/src/main/AndroidManifest.xml',

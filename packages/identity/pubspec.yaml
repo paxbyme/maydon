@@ -1,0 +1,22 @@
+name: maydon_identity
+version: 0.1.0
+publish_to: none
+environment:
+  sdk: '>=3.9.2 <4.0.0'
+  flutter: '>=3.35.5'
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: 2.6.1
+  flutter_secure_storage: 9.2.4
+  shared_preferences: 2.5.3
+  dio: 5.9.2
+  web: 1.1.1
+  maydon_api_client:
+    path: ../api_client
+  maydon_localization:
+    path: ../localization
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: 5.0.0

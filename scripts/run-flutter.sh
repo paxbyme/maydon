@@ -16,4 +16,9 @@ flutter gen-l10n
 
 cd "$repo_root/apps/$app"
 flutter pub get
+# Stable web origins match the API allowlist. An explicit port takes precedence.
+case "$app" in player) web_port=5173 ;; owner) web_port=5174 ;; admin) web_port=5175 ;; esac
+has_web_port=false
+for arg in "$@"; do case "$arg" in --web-port|--web-port=*) has_web_port=true ;; esac; done
+if [ "$has_web_port" = false ]; then set -- "$@" --web-port "$web_port"; fi
 exec flutter run "$@"

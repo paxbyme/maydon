@@ -18,3 +18,5 @@ build/
 **/ios/Flutter/flutter_export_environment.sh
 *.iml
 packages/localization/lib/generated/
+test-results/
+playwright-report/

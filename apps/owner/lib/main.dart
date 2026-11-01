@@ -1,11 +1,12 @@
+import 'package:maydon_identity/identity.dart';
+export 'package:maydon_identity/identity.dart' show localeProvider;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:maydon_design_system/design_system.dart';
 import 'package:maydon_localization/localization.dart';
 
-void main() => runApp(const ProviderScope(child: MaydonApp()));
-final localeProvider = StateProvider<Locale?>((ref) => null);
+Future<void> main() => runMaydonApp(const MaydonApp());
 const paths = ['/', '/calendar', '/facilities', '/staff', '/profile'];
 final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
@@ -58,8 +59,21 @@ class WorkspacePage extends ConsumerWidget {
           tooltip: strings.language,
           icon: const Icon(Icons.translate),
           initialValue: Localizations.localeOf(context).languageCode,
-          onSelected: (value) =>
-              ref.read(localeProvider.notifier).state = Locale(value),
+          onSelected: (value) async {
+            try {
+              await ref.read(localeProvider.notifier).select(value);
+              final session = ref.read(sessionProvider);
+              if (session.user != null && !session.mfaRequired) {
+                await session.updateLocale(value);
+              }
+            } catch (_) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(strings.storageError)));
+              }
+            }
+          },
           itemBuilder: (context) => const [
             PopupMenuItem(value: 'uz', child: Text('O‘zbekcha')),
             PopupMenuItem(value: 'ru', child: Text('Русский')),
@@ -78,11 +92,16 @@ class WorkspacePage extends ConsumerWidget {
             style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 24),
-          MaydonEmptyState(
-            icon: destinations[index].icon,
-            title: destinations[index].label,
-            message: strings.workspaceDetail,
-          ),
+          if (ref.watch(sessionProvider).user == null ||
+              ref.watch(sessionProvider).mfaRequired ||
+              index == 4)
+            const AccountPanel()
+          else
+            MaydonEmptyState(
+              icon: destinations[index].icon,
+              title: destinations[index].label,
+              message: strings.workspaceDetail,
+            ),
         ],
       ),
     );
