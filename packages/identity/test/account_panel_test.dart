@@ -25,6 +25,54 @@ Widget account(
   ),
 );
 void main() {
+  testWidgets('registration and verification preserve email for sign-in', (
+    tester,
+  ) async {
+    final paths = <String>[];
+    final session = controller(MemoryCredentials(), (request) async {
+      paths.add(request.path);
+      if (request.path.endsWith('/login')) {
+        expect(request.data['email'], 'test@example.test');
+        expect(request.data['password'], 'long-test-password');
+        return jsonBody(tokens());
+      }
+      return jsonBody({'accepted': true, 'verified': true});
+    });
+    await tester.pumpWidget(account(session));
+    await tester.tap(find.text('Create account'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'test@example.test',
+    );
+    await tester.enterText(find.byType(TextFormField).at(1), 'Test player');
+    await tester.enterText(
+      find.byType(TextFormField).at(2),
+      'long-test-password',
+    );
+    await tester.ensureVisible(
+      find.widgetWithText(FilledButton, 'Create account'),
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Create account'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byType(TextFormField).at(1),
+      '11111111-1111-4111-8111-111111111111',
+    );
+    await tester.enterText(find.byType(TextFormField).at(2), '123456');
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byType(TextFormField).at(1),
+      'long-test-password',
+    );
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Sign in'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+    await tester.pumpAndSettle();
+    expect(paths.length, 3);
+    expect(find.text('Email verified'), findsOneWidget);
+  });
   testWidgets(
     'session restoration disables sign-in including keyboard submission',
     (tester) async {

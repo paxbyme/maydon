@@ -21,6 +21,14 @@ async function enableAccessibility(page) {
   if (await activate.count())
     await activate.evaluate((element) => element.click());
 }
+// Flutter's semantic input can be replaced when focus opens its editing bridge.
+// Use keyboard events and blur to commit editing, as an actual keyboard user does.
+async function enterText(field, value) {
+  await field.click();
+  await field.pressSequentially(value, { delay: 20 });
+  await expect(field).toHaveValue(value);
+  await field.press('Tab');
+}
 async function message(email) {
   let result;
   await expect
@@ -114,11 +122,15 @@ for (const [index, app] of ['player', 'owner', 'admin'].entries()) {
     await page
       .getByRole('button', { name: 'Create account', exact: true })
       .click();
-    await page.getByRole('textbox', { name: 'Email', exact: true }).fill(email);
-    await page
-      .getByRole('textbox', { name: 'Your name', exact: true })
-      .fill('Browser player');
-    await page.getByLabel('Password', { exact: true }).fill(password);
+    await enterText(
+      page.getByRole('textbox', { name: 'Email', exact: true }),
+      email,
+    );
+    await enterText(
+      page.getByRole('textbox', { name: 'Your name', exact: true }),
+      'Browser player',
+    );
+    await enterText(page.getByLabel('Password', { exact: true }), password);
     await page
       .getByRole('button', { name: 'Create account', exact: true })
       .click();
@@ -128,14 +140,16 @@ for (const [index, app] of ['player', 'owner', 'admin'].entries()) {
       }),
     ).toBeVisible();
     const verification = await message(email);
-    await page
-      .getByRole('textbox', {
+    await enterText(
+      page.getByRole('textbox', {
         name: 'Verification reference from your message',
-      })
-      .fill(verification.challengeId);
-    await page
-      .getByRole('textbox', { name: 'Six-digit code' })
-      .fill(verification.code);
+      }),
+      verification.challengeId,
+    );
+    await enterText(
+      page.getByRole('textbox', { name: 'Six-digit code' }),
+      verification.code,
+    );
     await page.getByRole('button', { name: 'Confirm', exact: true }).click();
     if (app === 'admin') {
       const grant = `const {PrismaClient}=require('@prisma/client'); const db=new PrismaClient(); (async()=>{const user=await db.user.findUniqueOrThrow({where:{email:${JSON.stringify(email)}}}); await db.userRole.create({data:{userId:user.id,role:'ADMIN'}}); await db.$disconnect();})().catch(()=>process.exit(1));`;
@@ -149,7 +163,7 @@ for (const [index, app] of ['player', 'owner', 'admin'].entries()) {
         grant,
       ]);
     }
-    await page.getByLabel('Password', { exact: true }).fill(password);
+    await enterText(page.getByLabel('Password', { exact: true }), password);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     if (app === 'admin') {
       await expect(
@@ -160,7 +174,7 @@ for (const [index, app] of ['player', 'owner', 'admin'].entries()) {
       await page
         .getByRole('button', { name: 'Set up authenticator', exact: true })
         .click();
-      await page.getByLabel('Password', { exact: true }).fill(password);
+      await enterText(page.getByLabel('Password', { exact: true }), password);
       await page.getByRole('button', { name: 'Confirm', exact: true }).click();
       const secret = await page.getByText(/^[A-Z2-7]{32}$/).textContent();
       const code = execFileSync(
@@ -177,7 +191,10 @@ for (const [index, app] of ['player', 'owner', 'admin'].entries()) {
         ],
         { encoding: 'utf8' },
       );
-      await page.getByRole('textbox', { name: 'Six-digit code' }).fill(code);
+      await enterText(
+        page.getByRole('textbox', { name: 'Six-digit code' }),
+        code,
+      );
       await page.getByRole('button', { name: 'Confirm', exact: true }).click();
     }
     await expect(
