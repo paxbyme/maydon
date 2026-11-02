@@ -2,6 +2,14 @@
 services:
   postgres:
     image: postgres:16.11-bookworm
+    command:
+      [
+        'postgres',
+        '-c',
+        'log_error_verbosity=terse',
+        '-c',
+        'log_min_error_statement=panic',
+      ]
     environment:
       POSTGRES_USER: maydon
       POSTGRES_PASSWORD: maydon_local_only
@@ -21,6 +29,16 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+  migrate:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+      target: build
+    command: ['npm', 'run', 'db:migrate']
+    environment:
+      DATABASE_URL: postgresql://maydon:maydon_local_only@postgres:5432/maydon
+    depends_on:
+      postgres: { condition: service_healthy }
   api:
     build:
       context: ..
@@ -46,6 +64,7 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
   worker:
     build:
       context: ..
@@ -53,8 +72,10 @@ services:
     command: ['node', 'apps/api/dist/src/worker.js']
     environment:
       NODE_ENV: development
+      DATABASE_URL: postgresql://maydon:maydon_local_only@postgres:5432/maydon
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
 volumes:
   postgres_data:

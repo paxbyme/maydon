@@ -1,0 +1,32 @@
+# Isolated real PostgreSQL tests: no host ports and no persistent volumes.
+services:
+  postgres-test:
+    image: postgres:16.11-bookworm
+    command:
+      [
+        'postgres',
+        '-c',
+        'log_error_verbosity=terse',
+        '-c',
+        'log_min_error_statement=panic',
+      ]
+    environment:
+      POSTGRES_USER: maydon
+      POSTGRES_PASSWORD: maydon_local_only
+      POSTGRES_DB: maydon_test
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U maydon -d maydon_test']
+      interval: 2s
+      timeout: 3s
+      retries: 20
+  tests:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+      target: build
+    environment:
+      DATABASE_URL: postgresql://maydon:maydon_local_only@postgres-test:5432/maydon_test?connection_limit=60
+      MAYDON_TEST_DATABASE: 'true'
+    command: ['sh', '-c', 'npm run db:migrate && npm run test:integration']
+    depends_on:
+      postgres-test: { condition: service_healthy }

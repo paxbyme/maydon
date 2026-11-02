@@ -33,6 +33,7 @@ jobs:
       - run: npm ci
       - run: npm audit --audit-level=moderate
       - run: npm run format:check
+      - run: npm run db:format:check
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
@@ -48,6 +49,18 @@ jobs:
       - name: Stop local containers
         if: always()
         run: docker compose --env-file infra/verification.env -f infra/compose.yaml down
+  database:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Migrate fresh PostgreSQL and run integrity/recovery tests
+        run: docker compose -p maydon-m2-ci -f infra/compose.test.yaml up --build --abort-on-container-exit --exit-code-from tests
+      - name: Database diagnostics on failure
+        if: failure()
+        run: docker compose -p maydon-m2-ci -f infra/compose.test.yaml logs --no-color
+      - name: Remove isolated test database
+        if: always()
+        run: docker compose -p maydon-m2-ci -f infra/compose.test.yaml down -v
   flutter:
     runs-on: ubuntu-latest
     steps:

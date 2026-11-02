@@ -1,0 +1,440 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Locale {
+  uz
+  ru
+  en
+}
+
+enum PlatformRole {
+  PLAYER
+  ADMIN
+}
+
+enum ReviewStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum StaffPreset {
+  MANAGER
+  BOOKING_CLERK
+  VIEWER
+}
+
+enum BookingOrigin {
+  CUSTOMER
+  STAFF
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED_BY_USER
+  CANCELLED_BY_OWNER
+  CANCELLED_BY_ADMIN
+  COMPLETED
+  NO_SHOW
+}
+
+enum GameVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum GameStatus {
+  OPEN
+  CLOSED
+  COMPLETED
+  CANCELLED
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  DELIVERED
+  DEAD
+}
+
+enum DeliveryChannel {
+  IN_APP
+  EMAIL
+  SMS
+  PUSH
+}
+
+model User {
+  id               String                 @id @default(uuid()) @db.Uuid
+  email            String                 @unique @db.VarChar(254)
+  passwordHash     String
+  displayName      String                 @db.VarChar(100)
+  locale           Locale                 @default(uz)
+  emailVerifiedAt  DateTime?              @db.Timestamptz(3)
+  phone            String?                @unique @db.VarChar(20)
+  phoneVerifiedAt  DateTime?              @db.Timestamptz(3)
+  createdAt        DateTime               @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime               @updatedAt @db.Timestamptz(3)
+  deletedAt        DateTime?              @db.Timestamptz(3)
+  roles            UserRole[]
+  memberships      OwnerMembership[]
+  staff            StaffAssignment[]      @relation("StaffUser")
+  staffGranted     StaffAssignment[]      @relation("StaffGrantor")
+  bookings         Booking[]              @relation("BookingCustomer")
+  recordedBookings Booking[]              @relation("BookingActor")
+  blocks           ResourceBlock[]
+  bookingHistory   BookingStatusHistory[]
+  hostedGames      Game[]
+  participation    GameParticipant[]
+  invitations      Invitation[]
+  auditEvents      AuditEvent[]
+  notifications    Notification[]
+  deliveries       OutboxEvent[]
+  idempotency      IdempotencyRecord[]
+}
+
+model UserRole {
+  userId    String       @db.Uuid
+  role      PlatformRole
+  user      User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt DateTime     @default(now()) @db.Timestamptz(3)
+
+  @@id([userId, role])
+}
+
+model OwnerProfile {
+  id           String            @id @default(uuid()) @db.Uuid
+  legalName    String            @db.VarChar(200)
+  status       ReviewStatus      @default(DRAFT)
+  reviewReason String?
+  createdAt    DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime          @updatedAt @db.Timestamptz(3)
+  deletedAt    DateTime?         @db.Timestamptz(3)
+  memberships  OwnerMembership[]
+  facilities   Facility[]
+
+  @@index([status, createdAt])
+}
+
+model OwnerMembership {
+  ownerId   String       @db.Uuid
+  userId    String       @db.Uuid
+  owner     OwnerProfile @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt DateTime     @default(now()) @db.Timestamptz(3)
+
+  @@id([ownerId, userId])
+  @@index([userId])
+}
+
+model Facility {
+  id           String                @id @default(uuid()) @db.Uuid
+  ownerId      String                @db.Uuid
+  owner        OwnerProfile          @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  city         String                @default("Namangan") @db.VarChar(100)
+  address      String                @db.VarChar(500)
+  timezone     String                @default("Asia/Tashkent") @db.VarChar(100)
+  latitude     Decimal?              @db.Decimal(9, 6)
+  longitude    Decimal?              @db.Decimal(9, 6)
+  status       ReviewStatus          @default(DRAFT)
+  reviewReason String?
+  createdAt    DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime              @updatedAt @db.Timestamptz(3)
+  deletedAt    DateTime?             @db.Timestamptz(3)
+  translations FacilityTranslation[]
+  resources    BookableResource[]
+
+  @@index([ownerId, status])
+  @@index([city, status, deletedAt])
+}
+
+model FacilityTranslation {
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
+  facilityId  String   @db.Uuid
+  locale      Locale
+  name        String   @db.VarChar(200)
+  description String
+  facility    Facility @relation(fields: [facilityId], references: [id], onDelete: Restrict)
+
+  @@id([facilityId, locale])
+}
+
+model BookableResource {
+  id         String              @id @default(uuid()) @db.Uuid
+  facilityId String              @db.Uuid
+  facility   Facility            @relation(fields: [facilityId], references: [id], onDelete: Restrict)
+  name       String              @db.VarChar(200)
+  published  Boolean             @default(false)
+  createdAt  DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime            @updatedAt @db.Timestamptz(3)
+  deletedAt  DateTime?           @db.Timestamptz(3)
+  sports     ResourceSport[]
+  staff      StaffAssignment[]
+  bookings   Booking[]
+  blocks     ResourceBlock[]
+  occupancy  ResourceOccupancy[]
+
+  @@index([facilityId, deletedAt])
+}
+
+model Sport {
+  id           String             @id @default(uuid()) @db.Uuid
+  slug         String             @unique @db.VarChar(80)
+  active       Boolean            @default(true)
+  translations SportTranslation[]
+  resources    ResourceSport[]
+  games        Game[]
+  createdAt    DateTime           @default(now()) @db.Timestamptz(3)
+}
+
+model SportTranslation {
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  sportId   String   @db.Uuid
+  locale    Locale
+  name      String   @db.VarChar(100)
+  sport     Sport    @relation(fields: [sportId], references: [id], onDelete: Restrict)
+
+  @@id([sportId, locale])
+}
+
+model ResourceSport {
+  createdAt  DateTime         @default(now()) @db.Timestamptz(3)
+  resourceId String           @db.Uuid
+  sportId    String           @db.Uuid
+  resource   BookableResource @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  sport      Sport            @relation(fields: [sportId], references: [id], onDelete: Restrict)
+
+  @@id([resourceId, sportId])
+  @@index([sportId])
+}
+
+model StaffAssignment {
+  userId      String           @db.Uuid
+  resourceId  String           @db.Uuid
+  grantedById String           @db.Uuid
+  preset      StaffPreset
+  user        User             @relation("StaffUser", fields: [userId], references: [id], onDelete: Restrict)
+  resource    BookableResource @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  grantedBy   User             @relation("StaffGrantor", fields: [grantedById], references: [id], onDelete: Restrict)
+  createdAt   DateTime         @default(now()) @db.Timestamptz(3)
+
+  @@id([userId, resourceId])
+  @@index([resourceId])
+  @@index([grantedById])
+}
+
+model Booking {
+  id                        String                 @id @default(uuid()) @db.Uuid
+  reference                 String                 @unique @db.VarChar(32)
+  resourceId                String                 @db.Uuid
+  customerId                String?                @db.Uuid
+  recordedById              String                 @db.Uuid
+  origin                    BookingOrigin
+  status                    BookingStatus          @default(CONFIRMED)
+  startAt                   DateTime               @db.Timestamptz(3)
+  endAt                     DateTime               @db.Timestamptz(3)
+  priceMinor                BigInt
+  currency                  String                 @default("UZS") @db.Char(3)
+  priceSnapshot             Json
+  cancellationCutoffMinutes Int
+  policySnapshot            Json
+  customerName              String?                @db.VarChar(100)
+  customerContact           String?                @db.VarChar(100)
+  resource                  BookableResource       @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  customer                  User?                  @relation("BookingCustomer", fields: [customerId], references: [id], onDelete: Restrict)
+  recordedBy                User                   @relation("BookingActor", fields: [recordedById], references: [id], onDelete: Restrict)
+  occupancy                 ResourceOccupancy?
+  history                   BookingStatusHistory[]
+  games                     Game[]
+  createdAt                 DateTime               @default(now()) @db.Timestamptz(3)
+  updatedAt                 DateTime               @updatedAt @db.Timestamptz(3)
+
+  @@unique([id, resourceId])
+  @@index([customerId, startAt])
+  @@index([resourceId, startAt, status])
+  @@index([recordedById])
+  @@index([status, endAt])
+}
+
+model ResourceBlock {
+  id           String             @id @default(uuid()) @db.Uuid
+  resourceId   String             @db.Uuid
+  recordedById String             @db.Uuid
+  reason       String             @db.VarChar(500)
+  startAt      DateTime           @db.Timestamptz(3)
+  endAt        DateTime           @db.Timestamptz(3)
+  active       Boolean            @default(true)
+  resource     BookableResource   @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  recordedBy   User               @relation(fields: [recordedById], references: [id], onDelete: Restrict)
+  occupancy    ResourceOccupancy?
+  createdAt    DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime           @updatedAt @db.Timestamptz(3)
+
+  @@unique([id, resourceId])
+  @@index([resourceId, startAt])
+  @@index([recordedById])
+}
+
+model ResourceOccupancy {
+  id            String           @id @default(uuid()) @db.Uuid
+  resourceId    String           @db.Uuid
+  bookingId     String?          @unique @db.Uuid
+  blockId       String?          @unique @db.Uuid
+  occupiedStart DateTime         @db.Timestamptz(3)
+  occupiedEnd   DateTime         @db.Timestamptz(3)
+  active        Boolean          @default(true)
+  resource      BookableResource @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  booking       Booking?         @relation(fields: [bookingId, resourceId], references: [id, resourceId], onDelete: Restrict)
+  block         ResourceBlock?   @relation(fields: [blockId, resourceId], references: [id, resourceId], onDelete: Restrict)
+  createdAt     DateTime         @default(now()) @db.Timestamptz(3)
+
+  @@unique([bookingId, resourceId])
+  @@unique([blockId, resourceId])
+  @@index([resourceId, occupiedStart])
+}
+
+model BookingStatusHistory {
+  id        String        @id @default(uuid()) @db.Uuid
+  bookingId String        @db.Uuid
+  actorId   String?       @db.Uuid
+  status    BookingStatus
+  reason    String?
+  booking   Booking       @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  actor     User?         @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  createdAt DateTime      @default(now()) @db.Timestamptz(3)
+
+  @@index([bookingId, createdAt])
+  @@index([actorId])
+}
+
+model Game {
+  id                String            @id @default(uuid()) @db.Uuid
+  hostId            String            @db.Uuid
+  sportId           String            @db.Uuid
+  bookingId         String?           @db.Uuid
+  title             String            @db.VarChar(200)
+  description       String
+  location          String            @db.VarChar(500)
+  visibility        GameVisibility    @default(PUBLIC)
+  status            GameStatus        @default(OPEN)
+  venueConfirmed    Boolean           @default(true)
+  startAt           DateTime          @db.Timestamptz(3)
+  endAt             DateTime          @db.Timestamptz(3)
+  capacity          Int
+  minimumAttendance Int
+  host              User              @relation(fields: [hostId], references: [id], onDelete: Restrict)
+  sport             Sport             @relation(fields: [sportId], references: [id], onDelete: Restrict)
+  booking           Booking?          @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  participants      GameParticipant[]
+  invitations       Invitation[]
+  createdAt         DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime          @updatedAt @db.Timestamptz(3)
+
+  @@index([hostId, startAt])
+  @@index([sportId, visibility, status, startAt])
+  @@index([bookingId])
+}
+
+model GameParticipant {
+  gameId   String   @db.Uuid
+  userId   String   @db.Uuid
+  game     Game     @relation(fields: [gameId], references: [id], onDelete: Restrict)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  joinedAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@id([gameId, userId])
+  @@index([userId])
+}
+
+model Invitation {
+  id          String    @id @default(uuid()) @db.Uuid
+  gameId      String    @db.Uuid
+  createdById String    @db.Uuid
+  tokenHash   String    @unique @db.Char(64)
+  expiresAt   DateTime  @db.Timestamptz(3)
+  revokedAt   DateTime? @db.Timestamptz(3)
+  game        Game      @relation(fields: [gameId], references: [id], onDelete: Restrict)
+  createdBy   User      @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@index([gameId])
+  @@index([createdById])
+  @@index([expiresAt])
+}
+
+model AuditEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  actorId    String?  @db.Uuid
+  action     String   @db.VarChar(100)
+  entityType String   @db.VarChar(100)
+  entityId   String   @db.Uuid
+  requestId  String   @db.Uuid
+  metadata   Json
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([entityType, entityId, createdAt])
+  @@index([actorId, createdAt])
+  @@index([requestId])
+}
+
+model IdempotencyRecord {
+  id          String   @id @default(uuid()) @db.Uuid
+  actorId     String   @db.Uuid
+  operation   String   @db.VarChar(100)
+  key         String   @db.VarChar(200)
+  requestHash String   @db.Char(64)
+  response    Json
+  statusCode  Int
+  actor       User     @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  expiresAt   DateTime @db.Timestamptz(3)
+
+  @@unique([actorId, operation, key])
+  @@index([expiresAt])
+}
+
+model OutboxEvent {
+  id            String          @id @default(uuid()) @db.Uuid
+  eventKey      String          @unique @db.VarChar(200)
+  recipientId   String          @db.Uuid
+  channel       DeliveryChannel
+  type          String          @db.VarChar(100)
+  payload       Json
+  status        OutboxStatus    @default(PENDING)
+  attempts      Int             @default(0)
+  availableAt   DateTime        @default(now()) @db.Timestamptz(3)
+  leaseToken    String?         @db.Uuid
+  leaseUntil    DateTime?       @db.Timestamptz(3)
+  lastErrorCode String?         @db.VarChar(100)
+  deliveredAt   DateTime?       @db.Timestamptz(3)
+  recipient     User            @relation(fields: [recipientId], references: [id], onDelete: Restrict)
+  createdAt     DateTime        @default(now()) @db.Timestamptz(3)
+
+  @@index([status, availableAt])
+  @@index([status, leaseUntil])
+  @@index([recipientId])
+}
+
+model Notification {
+  id          String    @id @default(uuid()) @db.Uuid
+  deliveryKey String    @unique @db.VarChar(200)
+  userId      String    @db.Uuid
+  type        String    @db.VarChar(100)
+  payload     Json
+  readAt      DateTime? @db.Timestamptz(3)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@index([userId, createdAt])
+}

@@ -17,7 +17,15 @@ test('only versioned public health/version endpoints are exposed', async () => {
       version: '0.1.0',
       apiVersion: 'v1',
     });
-    await request(app.getHttpServer()).get('/health').expect(404);
+    const missing = await request(app.getHttpServer())
+      .get('/health?token=do-not-echo')
+      .set('X-Request-Id', 'untrusted-client-text')
+      .expect(404);
+    assert.equal(missing.body.code, 'NOT_FOUND');
+    assert.match(missing.body.requestId, /^[0-9a-f-]{36}$/);
+    assert.equal(missing.headers['x-request-id'], missing.body.requestId);
+    assert.ok(!JSON.stringify(missing.body).includes('do-not-echo'));
+    assert.ok(!JSON.stringify(missing.body).includes('untrusted-client-text'));
   } finally {
     await app.close();
   }
