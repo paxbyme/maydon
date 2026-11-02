@@ -66,18 +66,18 @@ test('approved owner creates a private facility draft that survives reload', asy
       'A private facility draft for a real browser journey.',
     );
     await page.getByRole('button', { name: 'Save draft', exact: true }).click();
-    await expect(
-      page.getByText('Browser Namangan court', { exact: true }),
-    ).toBeVisible();
-    await expect(page.getByText('Draft', { exact: true })).toBeVisible();
+    // Flutter Card merges static text into one container label and keeps
+    // interactive children separate. Verify what assistive technology reads.
+    const card = page.getByLabel(/Browser Namangan court/);
+    await expect(card).toBeVisible();
+    await expect(card).toHaveAttribute('aria-label', /Draft/);
     await page.reload();
     await enableAccessibility(page);
-    await expect(
-      page.getByText('Browser Namangan court', { exact: true }),
-    ).toBeVisible();
-    await expect(
-      page.getByText('Namangan, Browser street 12', { exact: true }),
-    ).toBeVisible();
+    await expect(card).toBeVisible();
+    await expect(card).toHaveAttribute(
+      'aria-label',
+      /Namangan, Browser street 12/,
+    );
     await expect(
       page.getByRole('button', { name: 'Edit facility', exact: true }),
     ).toBeVisible();
