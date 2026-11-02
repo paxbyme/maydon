@@ -1,5 +1,5 @@
 // GENERATED from docs/openapi.json. Do not edit.
-// Contract SHA-256: a30a6e9f36610768a30c14eb7eb0fb331412acaf98cbeb23dd28287731341912
+// Contract SHA-256: 99991f9400c14f5d8ac0943aae2cf5636c6aa9d84e1810d7e8f96674c300fbd4
 // dart format off
 import 'package:dio/dio.dart';
 
@@ -287,6 +287,82 @@ class AssignmentDto {
   };
 }
 
+class BusinessResponse {
+  const BusinessResponse({required this.id, required this.legalName, required this.status, required this.reviewReason, required this.createdAt});
+  final String id;
+  final String legalName;
+  final String status;
+  final String? reviewReason;
+  final String createdAt;
+  factory BusinessResponse.fromJson(Map<String, dynamic> json) => BusinessResponse(
+    id: json['id'] as String,
+    legalName: json['legalName'] as String,
+    status: json['status'] as String,
+    reviewReason: json['reviewReason'] == null ? null : json['reviewReason'] as String,
+    createdAt: json['createdAt'] as String,
+  );
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'legalName': legalName,
+    'status': status,
+    'reviewReason': reviewReason,
+    'createdAt': createdAt,
+  };
+}
+
+class BusinessPageResponse {
+  const BusinessPageResponse({required this.items, required this.nextCursor});
+  final List<BusinessResponse> items;
+  final String? nextCursor;
+  factory BusinessPageResponse.fromJson(Map<String, dynamic> json) => BusinessPageResponse(
+    items: (json['items'] as List<dynamic>).map((item) => BusinessResponse.fromJson(item as Map<String, dynamic>)).toList(),
+    nextCursor: json['nextCursor'] == null ? null : json['nextCursor'] as String,
+  );
+  Map<String, dynamic> toJson() => {
+    'items': items.map((item) => item.toJson()).toList(),
+    'nextCursor': nextCursor,
+  };
+}
+
+class BusinessSubmissionDto {
+  const BusinessSubmissionDto({required this.legalName, required this.evidence});
+  final String legalName;
+  final String evidence;
+  factory BusinessSubmissionDto.fromJson(Map<String, dynamic> json) => BusinessSubmissionDto(
+    legalName: json['legalName'] as String,
+    evidence: json['evidence'] as String,
+  );
+  Map<String, dynamic> toJson() => {
+    'legalName': legalName,
+    'evidence': evidence,
+  };
+}
+
+class BusinessEvidenceResponse {
+  const BusinessEvidenceResponse({required this.evidence});
+  final String evidence;
+  factory BusinessEvidenceResponse.fromJson(Map<String, dynamic> json) => BusinessEvidenceResponse(
+    evidence: json['evidence'] as String,
+  );
+  Map<String, dynamic> toJson() => {
+    'evidence': evidence,
+  };
+}
+
+class BusinessReviewDto {
+  const BusinessReviewDto({required this.decision, required this.reason});
+  final String decision;
+  final String reason;
+  factory BusinessReviewDto.fromJson(Map<String, dynamic> json) => BusinessReviewDto(
+    decision: json['decision'] as String,
+    reason: json['reason'] as String,
+  );
+  Map<String, dynamic> toJson() => {
+    'decision': decision,
+    'reason': reason,
+  };
+}
+
 class MaydonApi {
   MaydonApi(this.transport);
   final Dio transport;
@@ -443,6 +519,53 @@ class MaydonApi {
       options: Options(method: 'DELETE', headers: headers),
     );
     return response.data!;
+  }
+  Future<BusinessPageResponse> businessesList({String? cursor, Map<String, dynamic>? headers}) async {
+    final response = await transport.request<Map<String, dynamic>>(
+      '/api/v1/businesses',
+      queryParameters: {if (cursor != null) 'cursor': cursor},
+      options: Options(method: 'GET', headers: headers),
+    );
+    return BusinessPageResponse.fromJson(response.data!);
+  }
+  Future<BusinessResponse> businessesSubmit({required BusinessSubmissionDto body, Map<String, dynamic>? headers}) async {
+    final response = await transport.request<Map<String, dynamic>>(
+      '/api/v1/businesses',
+      data: body.toJson(),
+      options: Options(method: 'POST', headers: headers),
+    );
+    return BusinessResponse.fromJson(response.data!);
+  }
+  Future<BusinessResponse> businessesResubmit({required String id, required BusinessSubmissionDto body, Map<String, dynamic>? headers}) async {
+    final response = await transport.request<Map<String, dynamic>>(
+      '/api/v1/businesses/${Uri.encodeComponent(id)}/submission',
+      data: body.toJson(),
+      options: Options(method: 'PUT', headers: headers),
+    );
+    return BusinessResponse.fromJson(response.data!);
+  }
+  Future<BusinessPageResponse> businessReviewQueue({String? cursor, Map<String, dynamic>? headers}) async {
+    final response = await transport.request<Map<String, dynamic>>(
+      '/api/v1/admin/businesses',
+      queryParameters: {if (cursor != null) 'cursor': cursor},
+      options: Options(method: 'GET', headers: headers),
+    );
+    return BusinessPageResponse.fromJson(response.data!);
+  }
+  Future<BusinessEvidenceResponse> businessReviewEvidence({required String id, Map<String, dynamic>? headers}) async {
+    final response = await transport.request<Map<String, dynamic>>(
+      '/api/v1/admin/businesses/${Uri.encodeComponent(id)}/evidence',
+      options: Options(method: 'GET', headers: headers),
+    );
+    return BusinessEvidenceResponse.fromJson(response.data!);
+  }
+  Future<BusinessResponse> businessReviewReview({required String id, required BusinessReviewDto body, Map<String, dynamic>? headers}) async {
+    final response = await transport.request<Map<String, dynamic>>(
+      '/api/v1/admin/businesses/${Uri.encodeComponent(id)}/review',
+      data: body.toJson(),
+      options: Options(method: 'PUT', headers: headers),
+    );
+    return BusinessResponse.fromJson(response.data!);
   }
 }
 // dart format on

@@ -20,7 +20,11 @@ export function requestIdMiddleware(
   const requestId = randomUUID();
   response.locals.requestId = requestId;
   response.setHeader('X-Request-Id', requestId);
-  if (request.path.startsWith('/api/v1/auth'))
+  if (
+    ['/api/v1/auth', '/api/v1/businesses', '/api/v1/admin/businesses'].some(
+      (prefix) => request.path.startsWith(prefix),
+    )
+  )
     response.setHeader('Cache-Control', 'no-store');
   next();
 }

@@ -651,6 +651,243 @@
           "staff"
         ]
       }
+    },
+    "/api/v1/businesses": {
+      "get": {
+        "operationId": "BusinessesController_list",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessPageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Own business applications only; cursor page of at most 25, no private evidence",
+        "tags": [
+          "businesses"
+        ]
+      },
+      "post": {
+        "operationId": "BusinessesController_submit",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusinessSubmissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Verified email required; submit private ownership evidence for manual review",
+        "tags": [
+          "businesses"
+        ]
+      }
+    },
+    "/api/v1/businesses/{id}/submission": {
+      "put": {
+        "operationId": "BusinessesController_resubmit",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusinessSubmissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Owning member with verified email; resubmit rejected or draft application only",
+        "tags": [
+          "businesses"
+        ]
+      }
+    },
+    "/api/v1/admin/businesses": {
+      "get": {
+        "operationId": "BusinessReviewController_queue",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessPageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "MFA-verified administrator only; pending review queue, at most 25 per page",
+        "tags": [
+          "businesses"
+        ]
+      }
+    },
+    "/api/v1/admin/businesses/{id}/evidence": {
+      "get": {
+        "operationId": "BusinessReviewController_evidence",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessEvidenceResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "MFA-verified administrator only; private evidence access is audited",
+        "tags": [
+          "businesses"
+        ]
+      }
+    },
+    "/api/v1/admin/businesses/{id}/review": {
+      "put": {
+        "operationId": "BusinessReviewController_review",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusinessReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "MFA-verified administrator only; cannot review own business; reason required, pending applications only",
+        "tags": [
+          "businesses"
+        ]
+      }
     }
   },
   "info": {
@@ -1028,6 +1265,105 @@
         },
         "required": [
           "preset"
+        ]
+      },
+      "BusinessResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "legalName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "reviewReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "legalName",
+          "status",
+          "reviewReason",
+          "createdAt"
+        ]
+      },
+      "BusinessPageResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BusinessResponse"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "BusinessSubmissionDto": {
+        "type": "object",
+        "properties": {
+          "legalName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 30,
+            "maxLength": 5000,
+            "description": "Private explanation of business ownership and how reviewers can verify it. No passwords or payment data."
+          }
+        },
+        "required": [
+          "legalName",
+          "evidence"
+        ]
+      },
+      "BusinessEvidenceResponse": {
+        "type": "object",
+        "properties": {
+          "evidence": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence"
+        ]
+      },
+      "BusinessReviewDto": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "REJECTED"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "decision",
+          "reason"
         ]
       }
     }

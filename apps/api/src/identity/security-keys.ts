@@ -63,7 +63,7 @@ export class SecurityKeys {
   }
   encrypt(
     value: unknown,
-    purpose: 'verification' | 'mfa' = 'verification',
+    purpose: 'verification' | 'mfa' | 'owner-evidence' = 'verification',
   ): string {
     const nonce = randomBytes(12);
     const cipher = createCipheriv(
@@ -84,7 +84,7 @@ export class SecurityKeys {
   }
   decrypt<T>(
     envelope: string,
-    purpose: 'verification' | 'mfa' = 'verification',
+    purpose: 'verification' | 'mfa' | 'owner-evidence' = 'verification',
   ): T {
     const [version, nonce, tag, ciphertext, extra] = envelope.split('.');
     if (version !== 'v1' || !nonce || !tag || !ciphertext || extra)

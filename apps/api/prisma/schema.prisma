@@ -118,15 +118,16 @@ model UserRole {
 }
 
 model OwnerProfile {
-  id           String            @id @default(uuid()) @db.Uuid
-  legalName    String            @db.VarChar(200)
-  status       ReviewStatus      @default(DRAFT)
-  reviewReason String?
-  createdAt    DateTime          @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime          @updatedAt @db.Timestamptz(3)
-  deletedAt    DateTime?         @db.Timestamptz(3)
-  memberships  OwnerMembership[]
-  facilities   Facility[]
+  evidenceCiphertext String?
+  id                 String            @id @default(uuid()) @db.Uuid
+  legalName          String            @db.VarChar(200)
+  status             ReviewStatus      @default(DRAFT)
+  reviewReason       String?
+  createdAt          DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime          @updatedAt @db.Timestamptz(3)
+  deletedAt          DateTime?         @db.Timestamptz(3)
+  memberships        OwnerMembership[]
+  facilities         Facility[]
 
   @@index([status, createdAt])
 }

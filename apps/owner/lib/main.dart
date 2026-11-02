@@ -1,3 +1,4 @@
+import 'business_applications.dart';
 import 'package:maydon_identity/identity.dart';
 export 'package:maydon_identity/identity.dart' show localeProvider;
 import 'package:flutter/material.dart';
@@ -96,6 +97,8 @@ class WorkspacePage extends ConsumerWidget {
               ref.watch(sessionProvider).mfaRequired ||
               index == 4)
             const AccountPanel()
+          else if (index == 0 || index == 2)
+            const BusinessApplications()
           else
             MaydonEmptyState(
               icon: destinations[index].icon,

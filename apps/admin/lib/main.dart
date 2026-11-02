@@ -1,3 +1,4 @@
+import 'business_reviews.dart';
 import 'package:maydon_identity/identity.dart';
 export 'package:maydon_identity/identity.dart' show localeProvider;
 import 'package:flutter/material.dart';
@@ -94,11 +95,16 @@ class WorkspacePage extends ConsumerWidget {
           const SizedBox(height: 24),
           const AccountPanel(),
           const SizedBox(height: 24),
-          MaydonEmptyState(
-            icon: destinations[index].icon,
-            title: destinations[index].label,
-            message: strings.adminDetail,
-          ),
+          if (index == 1 &&
+              ref.watch(sessionProvider).user != null &&
+              !ref.watch(sessionProvider).mfaRequired)
+            const BusinessReviews()
+          else
+            MaydonEmptyState(
+              icon: destinations[index].icon,
+              title: destinations[index].label,
+              message: strings.adminDetail,
+            ),
         ],
       ),
     );

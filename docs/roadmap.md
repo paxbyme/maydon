@@ -9,7 +9,7 @@ Each milestone records files changed, data/API changes, executed verification, r
 | M2   | Core schema, SQL constraints, errors, audit/outbox                    | Fresh real-PostgreSQL migration, integrity and retry tests       | Accepted; CI 41305991627   |
 | M3   | Identity, verification/recovery, sessions, scope, locale              | Rotation/reuse/revocation, OTP abuse, cross-owner denial         | Accepted; CI 41311246592   |
 | M4   | Shared design and three navigations, API client                       | Widget, responsive, accessibility, locale and journey navigation | Accepted; CI 41382681089   |
-| M5   | Sports, applications, approvals, media/discovery                      | Publication/ownership, upload validation, filters                | Pending                    |
+| M5   | Sports, applications, approvals, media/discovery                      | Publication/ownership, upload validation, filters                | In progress; owner review  |
 | M6   | Resources, prices, calendars, exceptions, blocks/availability         | Overnight/timezone/buffer/block/scope tests                      | Pending                    |
 | M7   | App/offline bookings, cancellations/history/attendance                | Real concurrent races, idempotency, snapshots, journey           | Pending                    |
 | M8   | Public/private games, invites, capacity, linked cancellation          | Final-place race, privacy/revocation, venue changes              | Pending; required for MVP  |
