@@ -113,5 +113,21 @@
   "facilityDraftHelp": "Qoralamalar maxfiy va ularni band qilib boʻlmaydi. Ishga tushirishdan oldin resurslar, jadval va eʼlonni tasdiqlash bosqichlari tugallanishi kerak.",
   "noFacilities": "Hali inshootlar yoʻq. Quyida birinchi qoralamani yarating.",
   "facilitySaveError": "Soʻrov bajarilmadi. Ulanish va biznes tasdigʻini tekshiring. Qayta tahrirlashdan oldin roʻyxatni yangilang va oxirgi qoralamani oching.",
-  "facilityApprovalRequired": "Inshootlarni yaratish va tahrirlash uchun biznes tasdigʻi va tasdiqlangan elektron pochta kerak."
+  "facilityApprovalRequired": "Inshootlarni yaratish va tahrirlash uchun biznes tasdigʻi va tasdiqlangan elektron pochta kerak.",
+  "sportsCatalog": "Sport turlari",
+  "sportsCatalogHelp": "Sport turlari bilan tanishing. Inshootlar eʼlon qilingach, sport turi boʻyicha maydon qidirish mumkin boʻladi.",
+  "manageSports": "Sport turlarini boshqarish",
+  "noSports": "Koʻrsatish uchun sport turlari yoʻq.",
+  "sportsAdminHelp": "Nomlarni uchala tilda kiriting. Faolsizlantirish sport turini katalogdan yashiradi, oldingi bogʻlanishlar saqlanadi.",
+  "sportsSaveError": "Soʻrov bajarilmadi. Ruxsat va ulanishni tekshiring. Qayta tahrirlashdan oldin roʻyxatni yangilang va oxirgi versiyani oching; identifikatorlar takrorlanmasligi kerak.",
+  "sportActive": "Faol",
+  "sportInactive": "Faol emas",
+  "editSport": "Sport turini tahrirlash",
+  "createSport": "Sport turini yaratish",
+  "cancelSportEdit": "Tahrirlashni bekor qilish",
+  "sportSlug": "Doimiy identifikator",
+  "sportSlugHelp": "2–80 ta kichik lotin harfi, raqam yoki soʻzlar orasida bittadan chiziqcha ishlating. Bu identifikatorni keyin oʻzgartirib boʻlmaydi.",
+  "sportName": "Sport turi nomi",
+  "sportInactiveHelp": "Faol boʻlmagan sport turlari mavjud yozuvlarda saqlanadi, ammo ommaviy katalogda koʻrinmaydi.",
+  "saveSport": "Sport turini saqlash"
 }

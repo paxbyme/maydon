@@ -15,3 +15,7 @@ M2 adds a server-generated UUID `X-Request-Id` header and consistent `{code, mes
 ## Business applications
 
 Owner submission and administrator review endpoints are implemented; see [M5](milestones/M5.md) for routes, scopes and limits. Private evidence is omitted from lists, audited on read and never exposed publicly. Private facility draft creation/listing/editing is available to owning business members; publication, public discovery, booking and game APIs remain pending.
+
+## Sports catalog
+
+`GET /api/v1/sports` exposes a bounded guest catalog of active sports with complete translations. MFA-verified administrators manage names and activation under `/api/v1/admin/sports`. Slugs are immutable, stale revisions conflict, and deactivation preserves historical references. See [M5](milestones/M5.md) for the full contract and migration summary.

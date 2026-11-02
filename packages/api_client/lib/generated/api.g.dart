@@ -1,5 +1,5 @@
 // GENERATED from docs/openapi.json. Do not edit.
-// Contract SHA-256: ca837550b73addf0ed9a5215ac644b05ebeebcf6a7792eb126f89547b31b3160
+// Contract SHA-256: 9445f61d08beeaf1cdd4e9387cbd717f3827c1e8941419b6a8aba77139e5d4f0
 // dart format off
 import 'package:dio/dio.dart';
 
@@ -481,6 +481,91 @@ class FacilityUpdateDto {
   };
 }
 
+class SportTranslationDto {
+  const SportTranslationDto({required this.locale, required this.name});
+  final String locale;
+  final String name;
+  factory SportTranslationDto.fromJson(Map<String, dynamic> json) => SportTranslationDto(
+    locale: json['locale'] as String,
+    name: json['name'] as String,
+  );
+  Map<String, dynamic> toJson() => {
+    'locale': locale,
+    'name': name,
+  };
+}
+
+class SportResponse {
+  const SportResponse({required this.id, required this.slug, required this.active, required this.revision, required this.translations});
+  final String id;
+  final String slug;
+  final bool active;
+  final int revision;
+  final List<SportTranslationDto> translations;
+  factory SportResponse.fromJson(Map<String, dynamic> json) => SportResponse(
+    id: json['id'] as String,
+    slug: json['slug'] as String,
+    active: json['active'] as bool,
+    revision: json['revision'] as int,
+    translations: (json['translations'] as List<dynamic>).map((item) => SportTranslationDto.fromJson(item as Map<String, dynamic>)).toList(),
+  );
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'slug': slug,
+    'active': active,
+    'revision': revision,
+    'translations': translations.map((item) => item.toJson()).toList(),
+  };
+}
+
+class SportPageResponse {
+  const SportPageResponse({required this.items, required this.nextCursor});
+  final List<SportResponse> items;
+  final String? nextCursor;
+  factory SportPageResponse.fromJson(Map<String, dynamic> json) => SportPageResponse(
+    items: (json['items'] as List<dynamic>).map((item) => SportResponse.fromJson(item as Map<String, dynamic>)).toList(),
+    nextCursor: json['nextCursor'] == null ? null : json['nextCursor'] as String,
+  );
+  Map<String, dynamic> toJson() => {
+    'items': items.map((item) => item.toJson()).toList(),
+    'nextCursor': nextCursor,
+  };
+}
+
+class SportCreateDto {
+  const SportCreateDto({required this.active, required this.translations, required this.slug});
+  final bool active;
+  final List<SportTranslationDto> translations;
+  final String slug;
+  factory SportCreateDto.fromJson(Map<String, dynamic> json) => SportCreateDto(
+    active: json['active'] as bool,
+    translations: (json['translations'] as List<dynamic>).map((item) => SportTranslationDto.fromJson(item as Map<String, dynamic>)).toList(),
+    slug: json['slug'] as String,
+  );
+  Map<String, dynamic> toJson() => {
+    'active': active,
+    'translations': translations.map((item) => item.toJson()).toList(),
+    'slug': slug,
+  };
+}
+
+class SportUpdateDto {
+  const SportUpdateDto({required this.active, required this.translations, required this.expectedRevision});
+  final bool active;
+  final List<SportTranslationDto> translations;
+  final int expectedRevision;
+  factory SportUpdateDto.fromJson(Map<String, dynamic> json) => SportUpdateDto(
+    active: json['active'] as bool,
+    translations: (json['translations'] as List<dynamic>).map((item) => SportTranslationDto.fromJson(item as Map<String, dynamic>)).toList(),
+    expectedRevision: json['expectedRevision'] as int,
+  );
+  Map<String, dynamic> toJson() => {
+    'active': active,
+    'translations': translations.map((item) => item.toJson()).toList(),
+    'expectedRevision': expectedRevision,
+  };
+}
+
 class MaydonApi {
   MaydonApi(this.transport);
   final Dio transport;
@@ -708,6 +793,38 @@ class MaydonApi {
       options: Options(method: 'PUT', headers: headers),
     );
     return FacilityResponse.fromJson(response.data!);
+  }
+  Future<SportPageResponse> sportsList({String? cursor, Map<String, dynamic>? headers}) async {
+    final response = await transport.request<Map<String, dynamic>>(
+      '/api/v1/sports',
+      queryParameters: {if (cursor != null) 'cursor': cursor},
+      options: Options(method: 'GET', headers: headers),
+    );
+    return SportPageResponse.fromJson(response.data!);
+  }
+  Future<SportPageResponse> sportsAdminList({String? cursor, Map<String, dynamic>? headers}) async {
+    final response = await transport.request<Map<String, dynamic>>(
+      '/api/v1/admin/sports',
+      queryParameters: {if (cursor != null) 'cursor': cursor},
+      options: Options(method: 'GET', headers: headers),
+    );
+    return SportPageResponse.fromJson(response.data!);
+  }
+  Future<SportResponse> sportsAdminCreate({required SportCreateDto body, Map<String, dynamic>? headers}) async {
+    final response = await transport.request<Map<String, dynamic>>(
+      '/api/v1/admin/sports',
+      data: body.toJson(),
+      options: Options(method: 'POST', headers: headers),
+    );
+    return SportResponse.fromJson(response.data!);
+  }
+  Future<SportResponse> sportsAdminUpdate({required String id, required SportUpdateDto body, Map<String, dynamic>? headers}) async {
+    final response = await transport.request<Map<String, dynamic>>(
+      '/api/v1/admin/sports/${Uri.encodeComponent(id)}',
+      data: body.toJson(),
+      options: Options(method: 'PUT', headers: headers),
+    );
+    return SportResponse.fromJson(response.data!);
   }
 }
 // dart format on

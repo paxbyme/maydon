@@ -1,3 +1,4 @@
+import 'sports_editor.dart';
 import 'business_reviews.dart';
 import 'package:maydon_identity/identity.dart';
 export 'package:maydon_identity/identity.dart' show localeProvider;
@@ -12,6 +13,10 @@ const paths = ['/', '/applications', '/publication', '/reports', '/audit'];
 final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
     routes: [
+      GoRoute(
+        path: '/sports',
+        builder: (context, state) => const SportsAdminPage(),
+      ),
       for (var i = 0; i < paths.length; i++)
         GoRoute(
           path: paths[i],
@@ -95,6 +100,17 @@ class WorkspacePage extends ConsumerWidget {
           const SizedBox(height: 24),
           const AccountPanel(),
           const SizedBox(height: 24),
+          if (index == 0 &&
+              ref.watch(sessionProvider).user != null &&
+              !ref.watch(sessionProvider).mfaRequired)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: FilledButton.icon(
+                onPressed: () => context.push('/sports'),
+                icon: const Icon(Icons.sports),
+                label: Text(strings.manageSports),
+              ),
+            ),
           if (index == 1 &&
               ref.watch(sessionProvider).user != null &&
               !ref.watch(sessionProvider).mfaRequired)

@@ -1,3 +1,4 @@
+import { SportsModule } from './sports/sports.module';
 import { FacilitiesModule } from './facilities/facilities.module';
 import { BusinessesModule } from './businesses/businesses.module';
 import { ResourceAccessModule } from './access/resource-access.module';
@@ -15,6 +16,7 @@ import { HealthController } from './health.controller';
     ResourceAccessModule,
     BusinessesModule,
     FacilitiesModule,
+    SportsModule,
   ],
   controllers: [HealthController],
 })

@@ -113,5 +113,21 @@
   "facilityDraftHelp": "Drafts are private and cannot be booked. Resources, schedules and publication approval must be completed before launch.",
   "noFacilities": "No facilities yet. Create your first draft below.",
   "facilitySaveError": "Could not complete the request. Check your connection and business approval. Refresh and reopen the latest draft before retrying an edit.",
-  "facilityApprovalRequired": "An approved business and verified email are required to create or edit facilities."
+  "facilityApprovalRequired": "An approved business and verified email are required to create or edit facilities.",
+  "sportsCatalog": "Sports",
+  "sportsCatalogHelp": "Explore the sports catalog. Venue search by sport will be available when facilities are published.",
+  "manageSports": "Manage sports",
+  "noSports": "No sports to display.",
+  "sportsAdminHelp": "Maintain names in all three languages. Deactivating a sport removes it from the public catalog without deleting historical references.",
+  "sportsSaveError": "Could not complete the request. Check your access and connection. Refresh and reopen the latest version before retrying an edit; identifiers must be unique.",
+  "sportActive": "Active",
+  "sportInactive": "Inactive",
+  "editSport": "Edit sport",
+  "createSport": "Create sport",
+  "cancelSportEdit": "Cancel editing",
+  "sportSlug": "Stable identifier",
+  "sportSlugHelp": "Use 2–80 lowercase Latin letters, digits or single hyphens between words. This identifier cannot be changed later.",
+  "sportName": "Sport name",
+  "sportInactiveHelp": "Inactive sports stay in existing records but are hidden from the public catalog.",
+  "saveSport": "Save sport"
 }

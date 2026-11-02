@@ -1,3 +1,4 @@
+import 'sports_catalog.dart';
 import 'package:maydon_identity/identity.dart';
 export 'package:maydon_identity/identity.dart' show localeProvider;
 import 'package:flutter/material.dart';
@@ -87,6 +88,7 @@ class WorkspacePage extends ConsumerWidget {
           MediaQuery.sizeOf(context).width < 600 ? 20 : 40,
         ),
         children: [
+          if (index == 1) const SportsCatalog(),
           if (index == 0) ...[
             Row(
               children: [
