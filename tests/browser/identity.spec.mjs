@@ -42,27 +42,62 @@ async function message(email) {
 }
 test.beforeEach(async ({ page }, testInfo) => {
   const requests = [];
-  page.on('request', request => {
+  page.on('request', (request) => {
     if (!request.url().includes('/api/v1/auth/')) return;
     let fields = {};
     try {
       const body = request.postDataJSON();
-      fields = Object.fromEntries(Object.entries(body ?? {}).map(([key,value]) => [key, typeof value === 'string' ? {type:'string',length:value.length} : {type:typeof value}]));
+      fields = Object.fromEntries(
+        Object.entries(body ?? {}).map(([key, value]) => [
+          key,
+          typeof value === 'string'
+            ? { type: 'string', length: value.length }
+            : { type: typeof value },
+        ]),
+      );
     } catch {}
-    requests.push({path:new URL(request.url()).pathname,method:request.method(),fields});
+    requests.push({
+      path: new URL(request.url()).pathname,
+      method: request.method(),
+      fields,
+    });
   });
-  page.on('response', response => {
-    if (response.url().includes('/api/v1/auth/')) requests.push({path:new URL(response.url()).pathname,status:response.status()});
+  page.on('response', (response) => {
+    if (response.url().includes('/api/v1/auth/'))
+      requests.push({
+        path: new URL(response.url()).pathname,
+        status: response.status(),
+      });
   });
-  testInfo.annotations.push({type:'diagnostics',description: JSON.stringify(requests)});
-  page.on('pageerror', error => console.log('Browser runtime error:', error.name, error.message.replace(/[A-Z2-7]{32}/g,'[redacted]')));
+  testInfo.annotations.push({
+    type: 'diagnostics',
+    description: JSON.stringify(requests),
+  });
+  page.on('pageerror', (error) =>
+    console.log(
+      'Browser runtime error:',
+      error.name,
+      error.message.replace(/[A-Z2-7]{32}/g, '[redacted]'),
+    ),
+  );
   testInfo._safeRequests = requests;
 });
-test.afterEach(async ({page}, testInfo) => {
+test.afterEach(async ({ page }, testInfo) => {
   if (testInfo.status === testInfo.expectedStatus) return;
-  console.log('Safe request diagnostics:', JSON.stringify(testInfo._safeRequests));
+  console.log(
+    'Safe request diagnostics:',
+    JSON.stringify(testInfo._safeRequests),
+  );
   const visible = await page.locator('flt-semantics').allTextContents();
-  console.log('Visible semantic text:', JSON.stringify([...new Set(visible)].filter(text=>text.trim()).map(text=>text.replace(/[A-Z2-7]{32}/g,'[redacted]')).slice(-35)));
+  console.log(
+    'Visible semantic text:',
+    JSON.stringify(
+      [...new Set(visible)]
+        .filter((text) => text.trim())
+        .map((text) => text.replace(/[A-Z2-7]{32}/g, '[redacted]'))
+        .slice(-35),
+    ),
+  );
 });
 for (const [index, app] of ['player', 'owner', 'admin'].entries()) {
   test(`${app}: register, verify email, sign in, restore secure cookie, sign out`, async ({
