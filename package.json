@@ -1,0 +1,38 @@
+{
+  "name": "maydon",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/api"
+  ],
+  "engines": {
+    "node": "22.23.1"
+  },
+  "scripts": {
+    "build": "npm run build --workspace @maydon/api",
+    "typecheck": "npm run typecheck --workspace @maydon/api",
+    "test": "npm run test --workspace @maydon/api",
+    "dev:api": "npm run dev --workspace @maydon/api",
+    "start": "npm run start --workspace @maydon/api",
+    "worker": "npm run worker --workspace @maydon/api",
+    "format:check": "prettier --check .",
+    "format": "prettier --write .",
+    "openapi": "npm run openapi --workspace @maydon/api",
+    "secrets:check": "node scripts/check-secrets.mjs",
+    "localization:check": "node scripts/check-localization.mjs",
+    "foundation:check": "node scripts/check-foundation.mjs",
+    "preflight": "node scripts/preflight.mjs",
+    "test:smoke": "node scripts/smoke-api.mjs"
+  },
+  "devDependencies": {
+    "prettier": "3.6.2"
+  },
+  "overrides": {
+    "@nestjs/platform-express": {
+      "multer": "2.5.0"
+    },
+    "@nestjs/swagger": {
+      "js-yaml": "5.5.0"
+    }
+  }
+}

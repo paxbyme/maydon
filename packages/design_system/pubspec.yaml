@@ -1,0 +1,11 @@
+name: maydon_design_system
+version: 0.1.0
+publish_to: none
+environment:
+  sdk: '>=3.9.2 <4.0.0'
+  flutter: '>=3.35.5'
+dependencies:
+  flutter:
+    sdk: flutter
+dev_dependencies:
+  flutter_lints: 5.0.0

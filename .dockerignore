@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/build
+.toolchains
+.cache
+.git
+.env
+apps/player
+apps/owner
+apps/admin
+packages

@@ -1,0 +1,25 @@
+name: maydon_player
+version: 0.1.0+1
+publish_to: none
+environment:
+  sdk: '>=3.9.2 <4.0.0'
+  flutter: '>=3.35.5'
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_riverpod: 2.6.1
+  go_router: 14.8.1
+  maydon_api_client:
+    path: ../../packages/api_client
+  maydon_design_system:
+    path: ../../packages/design_system
+  maydon_localization:
+    path: ../../packages/localization
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: 5.0.0
+flutter:
+  uses-material-design: true
