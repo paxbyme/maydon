@@ -8,6 +8,7 @@ export default defineConfig({
   expect: { timeout: 15000 },
   use: {
     browserName: 'chromium',
+    actionTimeout: 20000,
     viewport: { width: 1280, height: 900 },
     trace: 'off',
     screenshot: 'off',

@@ -226,7 +226,7 @@ for (const [index, app] of ['player', 'owner', 'admin'].entries()) {
       /accessToken|refreshToken|test-access|new-credential/,
     );
     await page.getByRole('button', { name: 'Language', exact: true }).click();
-    await page.getByText('Русский', { exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Русский', exact: true }).click();
     await expect(
       page.getByText('Почта подтверждена', { exact: true }),
     ).toBeVisible();
@@ -244,7 +244,7 @@ for (const [index, app] of ['player', 'owner', 'admin'].entries()) {
       page.getByText('Почта подтверждена', { exact: true }),
     ).toBeVisible();
     await page.getByRole('button', { name: 'Язык', exact: true }).click();
-    await page.getByText('English', { exact: true }).click();
+    await page.getByRole('menuitem', { name: 'English', exact: true }).click();
 
     await page.getByRole('button', { name: 'Sign out', exact: true }).click();
     await expect(
