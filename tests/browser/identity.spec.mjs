@@ -25,8 +25,20 @@ async function enableAccessibility(page) {
 // Use keyboard events and blur to commit editing, as an actual keyboard user does.
 async function enterText(field, value) {
   await field.click();
+  // DOM focus precedes Flutter's semantics update, which attaches the input
+  // listener. Wait across the render boundary before sending the first key.
+  await field.evaluate(
+    () =>
+      new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      }),
+  );
+  await expect(field).toBeFocused();
   await field.pressSequentially(value, { delay: 20 });
-  await expect(field).toHaveValue(value);
+  // Do not let assertion failures print passwords, OTPs or challenge IDs.
+  await expect
+    .poll(async () => (await field.inputValue()) === value)
+    .toBe(true);
   await field.press('Tab');
 }
 async function message(email) {
