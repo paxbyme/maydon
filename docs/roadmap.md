@@ -8,7 +8,7 @@ Each milestone records files changed, data/API changes, executed verification, r
 | M1   | Git, apps/shared packages, CI, Docker, toolchain pins, health/version | Reproducible build, formatting, analysis, secret checks          | Accepted; CI 41240746027   |
 | M2   | Core schema, SQL constraints, errors, audit/outbox                    | Fresh real-PostgreSQL migration, integrity and retry tests       | Accepted; CI 41305991627   |
 | M3   | Identity, verification/recovery, sessions, scope, locale              | Rotation/reuse/revocation, OTP abuse, cross-owner denial         | Accepted; CI 41311246592   |
-| M4   | Shared design and three navigations, API client                       | Widget, responsive, accessibility, locale and journey navigation | In progress                |
+| M4   | Shared design and three navigations, API client                       | Widget, responsive, accessibility, locale and journey navigation | Accepted; CI 41382681089   |
 | M5   | Sports, applications, approvals, media/discovery                      | Publication/ownership, upload validation, filters                | Pending                    |
 | M6   | Resources, prices, calendars, exceptions, blocks/availability         | Overnight/timezone/buffer/block/scope tests                      | Pending                    |
 | M7   | App/offline bookings, cancellations/history/attendance                | Real concurrent races, idempotency, snapshots, journey           | Pending                    |
