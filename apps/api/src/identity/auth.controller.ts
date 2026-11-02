@@ -319,15 +319,23 @@ export class AuthController {
   @ApiOperation({
     summary: 'Revoke all own sessions; administrator MFA and web CSRF required',
   })
-  revoke(
+  async revoke(
     @Req() request: AuthenticatedRequest,
     @Res({ passthrough: true }) response: Response,
   ) {
-    return this.auth.logout(
+    const result = await this.auth.logout(
       request.principal,
       context(request, response, request.principal.session.web),
       true,
     );
+    for (const name of [REFRESH_COOKIE, CSRF_COOKIE]) {
+      response.clearCookie(name, {
+        secure: true,
+        sameSite: 'strict',
+        path: '/',
+      });
+    }
+    return result;
   }
   @AllowMfaPending()
   @ApiBearerAuth()

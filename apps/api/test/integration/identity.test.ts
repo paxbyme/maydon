@@ -142,13 +142,28 @@ test('web login uses secure cookies and refresh requires Origin and CSRF', async
     .set('Cookie', cookie)
     .send({ client: 'web' })
     .expect(403);
-  await request(app.getHttpServer())
+  const rotated = await request(app.getHttpServer())
     .post('/api/v1/auth/refresh')
     .set('Origin', 'http://localhost:5173')
     .set('Cookie', cookie)
     .set('X-CSRF-Token', csrf)
     .send({ client: 'web' })
     .expect(200);
+  const revoked = await request(app.getHttpServer())
+    .post('/api/v1/auth/sessions/revoke')
+    .set('Origin', 'http://localhost:5173')
+    .set('X-CSRF-Token', csrf)
+    .set('Authorization', `Bearer ${rotated.body.accessToken}`)
+    .expect(200);
+  const cleared = revoked.headers['set-cookie'] as unknown as string[];
+  assert.equal(cleared.length, 2);
+  assert.ok(
+    cleared.every((value) => value.includes('Expires=Thu, 01 Jan 1970')),
+  );
+  await request(app.getHttpServer())
+    .get('/api/v1/auth/me')
+    .set('Authorization', `Bearer ${rotated.body.accessToken}`)
+    .expect(401);
 });
 test('password recovery revokes sessions and rejects reuse', async () => {
   const login = await request(app.getHttpServer())

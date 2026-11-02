@@ -38,6 +38,8 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm run openapi
+      - run: git diff --exit-code -- docs/openapi.json
+      - run: node scripts/generate-api-client.mjs --check
       - run: docker compose --env-file infra/verification.env -f infra/compose.yaml build
       - name: Smoke test local containers
         run: |
@@ -72,12 +74,12 @@ jobs:
       - name: Require reviewed lockfiles and player platform runners
         run: |
           for app in player owner admin; do test -f apps/$app/pubspec.lock; done
-          for package in localization design_system api_client; do test -f packages/$package/pubspec.lock; done
+          for package in localization design_system api_client identity; do test -f packages/$package/pubspec.lock; done
           test -f apps/player/android/app/src/main/AndroidManifest.xml
           test -d apps/player/ios/Runner.xcodeproj
       - name: Resolve shared packages and generate localization
         run: |
-          for package in localization design_system api_client; do
+          for package in localization design_system api_client identity; do
             (cd packages/$package && flutter pub get --enforce-lockfile)
           done
           (cd packages/localization && flutter gen-l10n)
@@ -86,11 +88,48 @@ jobs:
           for app in player owner admin; do
             (cd apps/$app && flutter pub get --enforce-lockfile && flutter analyze && flutter test && flutter build web)
           done
-          for package in localization design_system api_client; do
+          for package in localization design_system api_client identity; do
             (cd packages/$package && flutter analyze)
           done
-          dart format --output=none --set-exit-if-changed apps/player/lib apps/player/test apps/owner/lib apps/owner/test apps/admin/lib apps/admin/test packages/api_client/lib/api_client.dart packages/design_system/lib/design_system.dart packages/localization/lib/localization.dart
-          (cd apps/player && flutter build apk --debug)
+          dart format --output=none --set-exit-if-changed apps/player/lib apps/player/test apps/owner/lib apps/owner/test apps/admin/lib apps/admin/test packages/api_client/lib/api_client.dart packages/design_system/lib packages/localization/lib/localization.dart packages/identity/lib packages/identity/test
+          (cd packages/identity && flutter test)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-apps
+          path: apps/*/build/web
+          retention-days: 3
+  browser:
+    needs: flutter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-apps
+          path: apps
+      - run: docker compose -p maydon-browser --env-file infra/verification.env -f infra/compose.yaml up -d --build --wait
+        env:
+          MAYDON_API_PORT: 3000
+      - run: npm run test:browser
+      - if: failure()
+        run: docker compose -p maydon-browser --env-file infra/verification.env -f infra/compose.yaml logs --no-color
+      - if: always()
+        run: docker compose -p maydon-browser --env-file infra/verification.env -f infra/compose.yaml down -v
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.5'
+          channel: stable
+      - run: cd packages/localization && flutter pub get --enforce-lockfile && flutter gen-l10n
+      - run: cd apps/player && flutter pub get --enforce-lockfile && flutter build apk --debug
   ios:
     runs-on: macos-latest
     steps:

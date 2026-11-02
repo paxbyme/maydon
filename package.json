@@ -29,9 +29,11 @@
     "db:migrate": "npm run db:migrate --workspace @maydon/api",
     "db:diff": "npm run db:diff --workspace @maydon/api",
     "test:integration": "npm run test:integration --workspace @maydon/api",
-    "db:format:check": "node scripts/check-prisma-format.mjs"
+    "db:format:check": "node scripts/check-prisma-format.mjs",
+    "test:browser": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "prettier": "3.6.2"
   },
   "overrides": {

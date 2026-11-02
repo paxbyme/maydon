@@ -1,15 +1,21 @@
+import 'package:maydon_identity/identity.dart';
+export 'package:maydon_identity/identity.dart' show localeProvider;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:maydon_design_system/design_system.dart';
 import 'package:maydon_localization/localization.dart';
 
-void main() => runApp(const ProviderScope(child: MaydonApp()));
-
+Future<void> main() => runMaydonApp(const MaydonApp());
+const paths = ['/', '/calendar', '/facilities', '/staff', '/profile'];
 final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
     routes: [
-      GoRoute(path: '/', builder: (context, state) => const FoundationPage()),
+      for (var i = 0; i < paths.length; i++)
+        GoRoute(
+          path: paths[i],
+          builder: (context, state) => WorkspacePage(index: i),
+        ),
     ],
   );
   ref.onDispose(router.dispose);
@@ -18,48 +24,85 @@ final routerProvider = Provider<GoRouter>((ref) {
 
 class MaydonApp extends ConsumerWidget {
   const MaydonApp({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) => MaterialApp.router(
+    debugShowCheckedModeBanner: false,
     onGenerateTitle: (context) => AppLocalizations.of(context)!.appName,
     theme: maydonTheme(),
+    locale: ref.watch(localeProvider),
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     routerConfig: ref.watch(routerProvider),
   );
 }
 
-class FoundationPage extends StatelessWidget {
-  const FoundationPage({super.key});
-
+class WorkspacePage extends ConsumerWidget {
+  const WorkspacePage({super.key, required this.index});
+  final int index;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final strings = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(title: Text(strings.appName)),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Semantics(
-                    header: true,
-                    child: Text(
-                      strings.ownerTitle,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(strings.foundationMessage),
-                ],
-              ),
-            ),
-          ),
+    final destinations = [
+      MaydonDestination(strings.overview, Icons.dashboard_outlined),
+      MaydonDestination(strings.calendar, Icons.calendar_month_outlined),
+      MaydonDestination(strings.facilities, Icons.stadium_outlined),
+      MaydonDestination(strings.staff, Icons.badge_outlined),
+      MaydonDestination(strings.profile, Icons.person_outline),
+    ];
+    return MaydonShell(
+      title: strings.appName,
+      destinations: destinations,
+      selectedIndex: index,
+      onSelect: (value) => context.go(paths[value]),
+      actions: [
+        PopupMenuButton<String>(
+          tooltip: strings.language,
+          icon: const Icon(Icons.translate),
+          initialValue: Localizations.localeOf(context).languageCode,
+          onSelected: (value) async {
+            try {
+              await ref.read(localeProvider.notifier).select(value);
+              final session = ref.read(sessionProvider);
+              if (session.user != null && !session.mfaRequired) {
+                await session.updateLocale(value);
+              }
+            } catch (_) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(strings.storageError)));
+              }
+            }
+          },
+          itemBuilder: (context) => const [
+            PopupMenuItem(value: 'uz', child: Text('O‘zbekcha')),
+            PopupMenuItem(value: 'ru', child: Text('Русский')),
+            PopupMenuItem(value: 'en', child: Text('English')),
+          ],
         ),
+        const SizedBox(width: 12),
+      ],
+      child: ListView(
+        padding: EdgeInsets.all(
+          MediaQuery.sizeOf(context).width < 600 ? 20 : 40,
+        ),
+        children: [
+          Text(
+            strings.ownerTitle,
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: 24),
+          if (ref.watch(sessionProvider).user == null ||
+              ref.watch(sessionProvider).mfaRequired ||
+              index == 4)
+            const AccountPanel()
+          else
+            MaydonEmptyState(
+              icon: destinations[index].icon,
+              title: destinations[index].label,
+              message: strings.workspaceDetail,
+            ),
+        ],
       ),
     );
   }
