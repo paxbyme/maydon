@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maydon_api_client/api_client.dart';
@@ -140,7 +141,17 @@ class _BusinessApplicationsState extends ConsumerState<BusinessApplications> {
                   ),
                   Text(status(item.status)),
                   if (item.reviewReason != null) Text(item.reviewReason!),
-                  if (item.status == 'APPROVED') Text(s.businessApprovedHelp),
+                  if (item.status == 'APPROVED') ...[
+                    Text(s.businessApprovedHelp),
+                    FilledButton(
+                      onPressed: _busy
+                          ? null
+                          : () => context.push(
+                              '/businesses/${item.id}/facilities',
+                            ),
+                      child: Text(s.manageFacilities),
+                    ),
+                  ],
                   if (['REJECTED', 'DRAFT'].contains(item.status))
                     TextButton(
                       onPressed: _busy

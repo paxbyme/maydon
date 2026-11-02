@@ -144,6 +144,7 @@ model OwnerMembership {
 }
 
 model Facility {
+  revision     Int                   @default(1)
   id           String                @id @default(uuid()) @db.Uuid
   ownerId      String                @db.Uuid
   owner        OwnerProfile          @relation(fields: [ownerId], references: [id], onDelete: Restrict)

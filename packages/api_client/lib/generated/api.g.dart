@@ -1,5 +1,5 @@
 // GENERATED from docs/openapi.json. Do not edit.
-// Contract SHA-256: 99991f9400c14f5d8ac0943aae2cf5636c6aa9d84e1810d7e8f96674c300fbd4
+// Contract SHA-256: ca837550b73addf0ed9a5215ac644b05ebeebcf6a7792eb126f89547b31b3160
 // dart format off
 import 'package:dio/dio.dart';
 
@@ -363,6 +363,124 @@ class BusinessReviewDto {
   };
 }
 
+class FacilityTranslationDto {
+  const FacilityTranslationDto({required this.locale, required this.name, required this.description});
+  final String locale;
+  final String name;
+  final String description;
+  factory FacilityTranslationDto.fromJson(Map<String, dynamic> json) => FacilityTranslationDto(
+    locale: json['locale'] as String,
+    name: json['name'] as String,
+    description: json['description'] as String,
+  );
+  Map<String, dynamic> toJson() => {
+    'locale': locale,
+    'name': name,
+    'description': description,
+  };
+}
+
+class FacilityResponse {
+  const FacilityResponse({required this.id, required this.ownerId, required this.city, required this.timezone, required this.address, required this.latitude, required this.longitude, required this.status, required this.reviewReason, required this.revision, required this.translations});
+  final String id;
+  final String ownerId;
+  final String city;
+  final String timezone;
+  final String address;
+  final num? latitude;
+  final num? longitude;
+  final String status;
+  final String? reviewReason;
+  final int revision;
+  final List<FacilityTranslationDto> translations;
+  factory FacilityResponse.fromJson(Map<String, dynamic> json) => FacilityResponse(
+    id: json['id'] as String,
+    ownerId: json['ownerId'] as String,
+    city: json['city'] as String,
+    timezone: json['timezone'] as String,
+    address: json['address'] as String,
+    latitude: json['latitude'] == null ? null : json['latitude'] as num,
+    longitude: json['longitude'] == null ? null : json['longitude'] as num,
+    status: json['status'] as String,
+    reviewReason: json['reviewReason'] == null ? null : json['reviewReason'] as String,
+    revision: json['revision'] as int,
+    translations: (json['translations'] as List<dynamic>).map((item) => FacilityTranslationDto.fromJson(item as Map<String, dynamic>)).toList(),
+  );
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'ownerId': ownerId,
+    'city': city,
+    'timezone': timezone,
+    'address': address,
+    'latitude': latitude,
+    'longitude': longitude,
+    'status': status,
+    'reviewReason': reviewReason,
+    'revision': revision,
+    'translations': translations.map((item) => item.toJson()).toList(),
+  };
+}
+
+class FacilityPageResponse {
+  const FacilityPageResponse({required this.canEdit, required this.items, required this.nextCursor});
+  final bool canEdit;
+  final List<FacilityResponse> items;
+  final String? nextCursor;
+  factory FacilityPageResponse.fromJson(Map<String, dynamic> json) => FacilityPageResponse(
+    canEdit: json['canEdit'] as bool,
+    items: (json['items'] as List<dynamic>).map((item) => FacilityResponse.fromJson(item as Map<String, dynamic>)).toList(),
+    nextCursor: json['nextCursor'] == null ? null : json['nextCursor'] as String,
+  );
+  Map<String, dynamic> toJson() => {
+    'canEdit': canEdit,
+    'items': items.map((item) => item.toJson()).toList(),
+    'nextCursor': nextCursor,
+  };
+}
+
+class FacilityCreateDto {
+  const FacilityCreateDto({required this.address, required this.latitude, required this.longitude, required this.translations});
+  final String address;
+  final num latitude;
+  final num longitude;
+  final List<FacilityTranslationDto> translations;
+  factory FacilityCreateDto.fromJson(Map<String, dynamic> json) => FacilityCreateDto(
+    address: json['address'] as String,
+    latitude: json['latitude'] as num,
+    longitude: json['longitude'] as num,
+    translations: (json['translations'] as List<dynamic>).map((item) => FacilityTranslationDto.fromJson(item as Map<String, dynamic>)).toList(),
+  );
+  Map<String, dynamic> toJson() => {
+    'address': address,
+    'latitude': latitude,
+    'longitude': longitude,
+    'translations': translations.map((item) => item.toJson()).toList(),
+  };
+}
+
+class FacilityUpdateDto {
+  const FacilityUpdateDto({required this.address, required this.latitude, required this.longitude, required this.translations, required this.expectedRevision});
+  final String address;
+  final num latitude;
+  final num longitude;
+  final List<FacilityTranslationDto> translations;
+  final int expectedRevision;
+  factory FacilityUpdateDto.fromJson(Map<String, dynamic> json) => FacilityUpdateDto(
+    address: json['address'] as String,
+    latitude: json['latitude'] as num,
+    longitude: json['longitude'] as num,
+    translations: (json['translations'] as List<dynamic>).map((item) => FacilityTranslationDto.fromJson(item as Map<String, dynamic>)).toList(),
+    expectedRevision: json['expectedRevision'] as int,
+  );
+  Map<String, dynamic> toJson() => {
+    'address': address,
+    'latitude': latitude,
+    'longitude': longitude,
+    'translations': translations.map((item) => item.toJson()).toList(),
+    'expectedRevision': expectedRevision,
+  };
+}
+
 class MaydonApi {
   MaydonApi(this.transport);
   final Dio transport;
@@ -566,6 +684,30 @@ class MaydonApi {
       options: Options(method: 'PUT', headers: headers),
     );
     return BusinessResponse.fromJson(response.data!);
+  }
+  Future<FacilityPageResponse> facilitiesList({required String ownerId, String? cursor, Map<String, dynamic>? headers}) async {
+    final response = await transport.request<Map<String, dynamic>>(
+      '/api/v1/businesses/${Uri.encodeComponent(ownerId)}/facilities',
+      queryParameters: {if (cursor != null) 'cursor': cursor},
+      options: Options(method: 'GET', headers: headers),
+    );
+    return FacilityPageResponse.fromJson(response.data!);
+  }
+  Future<FacilityResponse> facilitiesCreate({required String ownerId, required FacilityCreateDto body, Map<String, dynamic>? headers}) async {
+    final response = await transport.request<Map<String, dynamic>>(
+      '/api/v1/businesses/${Uri.encodeComponent(ownerId)}/facilities',
+      data: body.toJson(),
+      options: Options(method: 'POST', headers: headers),
+    );
+    return FacilityResponse.fromJson(response.data!);
+  }
+  Future<FacilityResponse> facilitiesUpdate({required String ownerId, required String id, required FacilityUpdateDto body, Map<String, dynamic>? headers}) async {
+    final response = await transport.request<Map<String, dynamic>>(
+      '/api/v1/businesses/${Uri.encodeComponent(ownerId)}/facilities/${Uri.encodeComponent(id)}',
+      data: body.toJson(),
+      options: Options(method: 'PUT', headers: headers),
+    );
+    return FacilityResponse.fromJson(response.data!);
   }
 }
 // dart format on

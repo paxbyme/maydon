@@ -888,6 +888,149 @@
           "businesses"
         ]
       }
+    },
+    "/api/v1/businesses/{ownerId}/facilities": {
+      "get": {
+        "operationId": "FacilitiesController_list",
+        "parameters": [
+          {
+            "name": "ownerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FacilityPageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Owning business members only; private facility list, cursor page of 25",
+        "tags": [
+          "facilities"
+        ]
+      },
+      "post": {
+        "operationId": "FacilitiesController_create",
+        "parameters": [
+          {
+            "name": "ownerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FacilityCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FacilityResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Verified member of approved business only; create unpublished Namangan facility draft with localized content",
+        "tags": [
+          "facilities"
+        ]
+      }
+    },
+    "/api/v1/businesses/{ownerId}/facilities/{id}": {
+      "put": {
+        "operationId": "FacilitiesController_update",
+        "parameters": [
+          {
+            "name": "ownerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FacilityUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FacilityResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Verified member of approved owning business only; edit draft/rejected facility using expectedRevision; stale or published edits return 409",
+        "tags": [
+          "facilities"
+        ]
+      }
     }
   },
   "info": {
@@ -1364,6 +1507,189 @@
         "required": [
           "decision",
           "reason"
+        ]
+      },
+      "FacilityTranslationDto": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "enum": [
+              "uz",
+              "ru",
+              "en"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 5000
+          }
+        },
+        "required": [
+          "locale",
+          "name",
+          "description"
+        ]
+      },
+      "FacilityResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          },
+          "reviewReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "translations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityTranslationDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "ownerId",
+          "city",
+          "timezone",
+          "address",
+          "latitude",
+          "longitude",
+          "status",
+          "reviewReason",
+          "revision",
+          "translations"
+        ]
+      },
+      "FacilityPageResponse": {
+        "type": "object",
+        "properties": {
+          "canEdit": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityResponse"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "canEdit",
+          "items",
+          "nextCursor"
+        ]
+      },
+      "FacilityCreateDto": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 500
+          },
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "translations": {
+            "minItems": 1,
+            "maxItems": 3,
+            "description": "One to three translations; at most one per locale (uz, ru, en)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityTranslationDto"
+            }
+          }
+        },
+        "required": [
+          "address",
+          "latitude",
+          "longitude",
+          "translations"
+        ]
+      },
+      "FacilityUpdateDto": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 500
+          },
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "translations": {
+            "minItems": 1,
+            "maxItems": 3,
+            "description": "One to three translations; at most one per locale (uz, ru, en)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityTranslationDto"
+            }
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "address",
+          "latitude",
+          "longitude",
+          "translations",
+          "expectedRevision"
         ]
       }
     }

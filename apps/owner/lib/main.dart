@@ -1,3 +1,4 @@
+import 'facilities.dart';
 import 'business_applications.dart';
 import 'package:maydon_identity/identity.dart';
 export 'package:maydon_identity/identity.dart' show localeProvider;
@@ -12,6 +13,11 @@ const paths = ['/', '/calendar', '/facilities', '/staff', '/profile'];
 final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
     routes: [
+      GoRoute(
+        path: '/businesses/:ownerId/facilities',
+        builder: (context, state) =>
+            BusinessFacilityPage(ownerId: state.pathParameters['ownerId']!),
+      ),
       for (var i = 0; i < paths.length; i++)
         GoRoute(
           path: paths[i],
