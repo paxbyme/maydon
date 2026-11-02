@@ -46,3 +46,7 @@ Soft-delete published entities with historical references. Expire/delete tempora
 The ledger retains inactive cancelled occupancy for history. Completed and no-show bookings retain effective historical occupancy. SQL exclusion protects buffered half-open ranges; deferred triggers require every booking/block to have a ledger entry covering its source range and matching its effective state at commit. A composite foreign key prevents a source on one resource from occupying another resource. Business mutations still must lock their resource row and enforce ownership, publication and scheduling rules in M6/M7; database tests are not evidence that those APIs exist.
 
 `npm run db:migrate` applies reviewed migrations; never use schema push for these custom constraints. Fresh migration and concurrency tests run in an isolated real PostgreSQL service from infra/compose.test.yaml. No production data is used.
+
+## M3 identity migration
+
+Migration `202611010004_identity` adds sessions, hashed refresh credentials, expiring/attempt-limited verification challenges and encrypted MFA fields. Database checks bound session lifetime to 30 days and challenge attempts to five. Existing business data and occupancy constraints are preserved.

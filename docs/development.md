@@ -66,3 +66,7 @@ Official references: [Node release support](https://nodejs.org/en/about/previous
 Compose runs a dedicated migration service before starting API and worker. The worker currently delivers only in-app outbox events. `npm run db:generate` generates Prisma models, `npm run db:format` formats the schema, and `npm run db:migrate` deploys reviewed SQL migrations to DATABASE_URL. Prisma expects PostgreSQL and requires OpenSSL in Linux containers, included in the Dockerfile.
 
 See [database](database.md), [outbox](outbox.md) and [testing](testing.md) for invariants and isolated integration commands. No business data seeding or production credentials are included.
+
+## Local identity setup
+
+Run `node scripts/init-local-env.mjs` once to create a private random authentication secret. The script preserves existing configuration. See [identity development and delivery](identity.md) for cookie origins, test messages and required environment.

@@ -16,6 +16,7 @@ WORKDIR /app
 COPY --from=production-dependencies --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/apps/api/dist ./apps/api/dist
 COPY --chown=node:node scripts/smoke-api.mjs ./scripts/smoke-api.mjs
+RUN mkdir -p /app/dev-mailbox && chown node:node /app/dev-mailbox && chmod 700 /app/dev-mailbox
 USER node
 EXPOSE 3000
 CMD ["node", "apps/api/dist/src/main.js"]

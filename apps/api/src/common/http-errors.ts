@@ -1,3 +1,5 @@
+import { AuthError } from '../identity/auth.errors';
+import { RateLimitException } from '../identity/rate-limit.service';
 import {
   ArgumentsHost,
   Catch,
@@ -11,13 +13,15 @@ import type { NextFunction, Request, Response } from 'express';
 
 // Server-generated IDs prevent client-controlled text from entering diagnostic identifiers.
 export function requestIdMiddleware(
-  _request: Request,
+  request: Request,
   response: Response,
   next: NextFunction,
 ) {
   const requestId = randomUUID();
   response.locals.requestId = requestId;
   response.setHeader('X-Request-Id', requestId);
+  if (request.path.startsWith('/api/v1/auth'))
+    response.setHeader('Cache-Control', 'no-store');
   next();
 }
 
@@ -28,6 +32,7 @@ const codes: Record<number, string> = {
   404: 'NOT_FOUND',
   409: 'CONFLICT',
   429: 'RATE_LIMITED',
+  503: 'SERVICE_UNAVAILABLE',
 };
 
 @Catch()
@@ -39,7 +44,12 @@ export class ApiExceptionFilter implements ExceptionFilter {
     let message = 'The request could not be completed.';
     if (error instanceof HttpException) {
       status = error.getStatus();
-      code = codes[status] ?? 'REQUEST_FAILED';
+      code =
+        error instanceof AuthError
+          ? error.code
+          : (codes[status] ?? 'REQUEST_FAILED');
+      if (error instanceof RateLimitException)
+        response.setHeader('Retry-After', error.retryAfter);
       // Do not echo arbitrary exception messages, request bodies or URLs.
       message =
         status === 400

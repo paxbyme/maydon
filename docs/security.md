@@ -1,6 +1,6 @@
 # Security requirements
 
-M1 provides no authentication or customer data handling. M3 must implement Argon2id, single-use challenges, 15-minute access tokens and rotating refresh sessions with a 30-day absolute lifetime, hashed secrets, reuse detection and revocation. Mobile refresh tokens use secure platform storage. Browser refresh credentials use Secure/HttpOnly cookies, origin checks and CSRF protection; never local storage.
+M3 implements backend identity, single-use challenges, Argon2id, 15-minute access tokens, rotating 30-day sessions and resource-scoped access. See [identity design](identity.md) for concrete controls and remaining operational gates. Flutter secure credential storage and authentication UI follow in M4.
 
 Admin MFA is mandatory. Engineers use separate audited infrastructure identity. Every protected action checks server-side ownership and explicit resource assignments. Verification uses distributed throttling, resend and attempt limits, expiry and anti-enumeration responses. Log request IDs and structured events, never credentials, OTPs, contacts or invitation links.
 

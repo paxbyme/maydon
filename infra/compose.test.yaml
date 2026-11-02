@@ -19,6 +19,13 @@ services:
       interval: 2s
       timeout: 3s
       retries: 20
+  redis-test:
+    image: redis:7.4.2-bookworm
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 2s
+      timeout: 3s
+      retries: 20
   tests:
     build:
       context: ..
@@ -27,6 +34,11 @@ services:
     environment:
       DATABASE_URL: postgresql://maydon:maydon_local_only@postgres-test:5432/maydon_test?connection_limit=60
       MAYDON_TEST_DATABASE: 'true'
+      AUTH_SECRET: test-only-secret-never-use-outside-tests-123456789
+      REDIS_URL: redis://redis-test:6379
+      DELIVERY_ADAPTER: local
+      DEV_DELIVERY_DIR: /tmp/maydon-test-mailbox
     command: ['sh', '-c', 'npm run db:migrate && npm run test:integration']
     depends_on:
       postgres-test: { condition: service_healthy }
+      redis-test: { condition: service_healthy }

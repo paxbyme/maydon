@@ -5,7 +5,9 @@ import { createApp, createDocument } from '../src/bootstrap';
 import { validateEnvironment } from '../src/config';
 import request from 'supertest';
 
-test('only versioned public health/version endpoints are exposed', async () => {
+process.env.AUTH_SECRET = 'test-only-secret-never-use-outside-tests-123456789';
+
+test('versioned public health/version endpoints are exposed', async () => {
   const app = await createApp();
   try {
     await app.init();
@@ -35,9 +37,10 @@ test('OpenAPI describes the public routes and response schema', async () => {
   const app = await createApp();
   try {
     const document = createDocument(app);
-    assert.deepEqual(Object.keys(document.paths).sort(), [
-      '/api/v1/health',
-      '/api/v1/version',
+    assert.ok(document.paths['/api/v1/auth/login']);
+    assert.ok(document.paths['/api/v1/version']);
+    assert.deepEqual(document.paths['/api/v1/auth/me']?.get?.security, [
+      { bearer: [] },
     ]);
     assert.equal(
       document.paths['/api/v1/health']?.get?.operationId,
