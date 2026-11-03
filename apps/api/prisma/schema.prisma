@@ -118,15 +118,16 @@ model UserRole {
 }
 
 model OwnerProfile {
-  id           String            @id @default(uuid()) @db.Uuid
-  legalName    String            @db.VarChar(200)
-  status       ReviewStatus      @default(DRAFT)
-  reviewReason String?
-  createdAt    DateTime          @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime          @updatedAt @db.Timestamptz(3)
-  deletedAt    DateTime?         @db.Timestamptz(3)
-  memberships  OwnerMembership[]
-  facilities   Facility[]
+  evidenceCiphertext String?
+  id                 String            @id @default(uuid()) @db.Uuid
+  legalName          String            @db.VarChar(200)
+  status             ReviewStatus      @default(DRAFT)
+  reviewReason       String?
+  createdAt          DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime          @updatedAt @db.Timestamptz(3)
+  deletedAt          DateTime?         @db.Timestamptz(3)
+  memberships        OwnerMembership[]
+  facilities         Facility[]
 
   @@index([status, createdAt])
 }
@@ -143,6 +144,7 @@ model OwnerMembership {
 }
 
 model Facility {
+  revision     Int                   @default(1)
   id           String                @id @default(uuid()) @db.Uuid
   ownerId      String                @db.Uuid
   owner        OwnerProfile          @relation(fields: [ownerId], references: [id], onDelete: Restrict)
@@ -194,6 +196,7 @@ model BookableResource {
 }
 
 model Sport {
+  revision     Int                @default(1)
   id           String             @id @default(uuid()) @db.Uuid
   slug         String             @unique @db.VarChar(80)
   active       Boolean            @default(true)

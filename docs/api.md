@@ -11,3 +11,11 @@ Every business route must document principal, ownership and resource scope. Use 
 Generate Dart models/client from the OpenAPI document and fail CI on drift. Business endpoints and client models must be introduced together. Never accept identity or role claims from client-supplied request bodies as authorization.
 
 M2 adds a server-generated UUID `X-Request-Id` header and consistent `{code, message, requestId}` errors. Unknown errors never echo exception text, database detail, URLs or submitted credentials. PostgreSQL/Prisma integrity conflicts map to HTTP 409. Route-level field errors will be added alongside validated business DTOs.
+
+## Business applications
+
+Owner submission and administrator review endpoints are implemented; see [M5](milestones/M5.md) for routes, scopes and limits. Private evidence is omitted from lists, audited on read and never exposed publicly. Private facility draft creation/listing/editing is available to owning business members; publication, public discovery, booking and game APIs remain pending.
+
+## Sports catalog
+
+`GET /api/v1/sports` exposes a bounded guest catalog of active sports with complete translations. MFA-verified administrators manage names and activation under `/api/v1/admin/sports`. Slugs are immutable, stale revisions conflict, and deactivation preserves historical references. See [M5](milestones/M5.md) for the full contract and migration summary.

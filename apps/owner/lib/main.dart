@@ -1,3 +1,5 @@
+import 'facilities.dart';
+import 'business_applications.dart';
 import 'package:maydon_identity/identity.dart';
 export 'package:maydon_identity/identity.dart' show localeProvider;
 import 'package:flutter/material.dart';
@@ -11,6 +13,11 @@ const paths = ['/', '/calendar', '/facilities', '/staff', '/profile'];
 final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
     routes: [
+      GoRoute(
+        path: '/businesses/:ownerId/facilities',
+        builder: (context, state) =>
+            BusinessFacilityPage(ownerId: state.pathParameters['ownerId']!),
+      ),
       for (var i = 0; i < paths.length; i++)
         GoRoute(
           path: paths[i],
@@ -96,6 +103,8 @@ class WorkspacePage extends ConsumerWidget {
               ref.watch(sessionProvider).mfaRequired ||
               index == 4)
             const AccountPanel()
+          else if (index == 0 || index == 2)
+            const BusinessApplications()
           else
             MaydonEmptyState(
               icon: destinations[index].icon,

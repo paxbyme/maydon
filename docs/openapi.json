@@ -651,6 +651,536 @@
           "staff"
         ]
       }
+    },
+    "/api/v1/businesses": {
+      "get": {
+        "operationId": "BusinessesController_list",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessPageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Own business applications only; cursor page of at most 25, no private evidence",
+        "tags": [
+          "businesses"
+        ]
+      },
+      "post": {
+        "operationId": "BusinessesController_submit",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusinessSubmissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Verified email required; submit private ownership evidence for manual review",
+        "tags": [
+          "businesses"
+        ]
+      }
+    },
+    "/api/v1/businesses/{id}/submission": {
+      "put": {
+        "operationId": "BusinessesController_resubmit",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusinessSubmissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Owning member with verified email; resubmit rejected or draft application only",
+        "tags": [
+          "businesses"
+        ]
+      }
+    },
+    "/api/v1/admin/businesses": {
+      "get": {
+        "operationId": "BusinessReviewController_queue",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessPageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "MFA-verified administrator only; pending review queue, at most 25 per page",
+        "tags": [
+          "businesses"
+        ]
+      }
+    },
+    "/api/v1/admin/businesses/{id}/evidence": {
+      "get": {
+        "operationId": "BusinessReviewController_evidence",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessEvidenceResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "MFA-verified administrator only; private evidence access is audited",
+        "tags": [
+          "businesses"
+        ]
+      }
+    },
+    "/api/v1/admin/businesses/{id}/review": {
+      "put": {
+        "operationId": "BusinessReviewController_review",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusinessReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "MFA-verified administrator only; cannot review own business; reason required, pending applications only",
+        "tags": [
+          "businesses"
+        ]
+      }
+    },
+    "/api/v1/businesses/{ownerId}/facilities": {
+      "get": {
+        "operationId": "FacilitiesController_list",
+        "parameters": [
+          {
+            "name": "ownerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FacilityPageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Owning business members only; private facility list, cursor page of 25",
+        "tags": [
+          "facilities"
+        ]
+      },
+      "post": {
+        "operationId": "FacilitiesController_create",
+        "parameters": [
+          {
+            "name": "ownerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FacilityCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FacilityResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Verified member of approved business only; create unpublished Namangan facility draft with localized content",
+        "tags": [
+          "facilities"
+        ]
+      }
+    },
+    "/api/v1/businesses/{ownerId}/facilities/{id}": {
+      "put": {
+        "operationId": "FacilitiesController_update",
+        "parameters": [
+          {
+            "name": "ownerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FacilityUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FacilityResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Verified member of approved owning business only; edit draft/rejected facility using expectedRevision; stale or published edits return 409",
+        "tags": [
+          "facilities"
+        ]
+      }
+    },
+    "/api/v1/sports": {
+      "get": {
+        "operationId": "SportsController_list",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportPageResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Guest access; active sports with complete uz/ru/en names, cursor page of at most 25",
+        "tags": [
+          "sports"
+        ]
+      }
+    },
+    "/api/v1/admin/sports": {
+      "get": {
+        "operationId": "SportsAdminController_list",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportPageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "MFA-verified administrator with verified email; includes inactive sports, bounded pagination",
+        "tags": [
+          "sports"
+        ]
+      },
+      "post": {
+        "operationId": "SportsAdminController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SportCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "MFA-verified administrator; create sport with immutable unique slug and all three translations, audited",
+        "tags": [
+          "sports"
+        ]
+      }
+    },
+    "/api/v1/admin/sports/{id}": {
+      "put": {
+        "operationId": "SportsAdminController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SportUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "MFA-verified administrator; rename or activate/deactivate with expectedRevision, retains historical references",
+        "tags": [
+          "sports"
+        ]
+      }
     }
   },
   "info": {
@@ -1028,6 +1558,411 @@
         },
         "required": [
           "preset"
+        ]
+      },
+      "BusinessResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "legalName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "reviewReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "legalName",
+          "status",
+          "reviewReason",
+          "createdAt"
+        ]
+      },
+      "BusinessPageResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BusinessResponse"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "BusinessSubmissionDto": {
+        "type": "object",
+        "properties": {
+          "legalName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 30,
+            "maxLength": 5000,
+            "description": "Private explanation of business ownership and how reviewers can verify it. No passwords or payment data."
+          }
+        },
+        "required": [
+          "legalName",
+          "evidence"
+        ]
+      },
+      "BusinessEvidenceResponse": {
+        "type": "object",
+        "properties": {
+          "evidence": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence"
+        ]
+      },
+      "BusinessReviewDto": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "REJECTED"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "decision",
+          "reason"
+        ]
+      },
+      "FacilityTranslationDto": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "enum": [
+              "uz",
+              "ru",
+              "en"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 5000
+          }
+        },
+        "required": [
+          "locale",
+          "name",
+          "description"
+        ]
+      },
+      "FacilityResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          },
+          "reviewReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "translations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityTranslationDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "ownerId",
+          "city",
+          "timezone",
+          "address",
+          "latitude",
+          "longitude",
+          "status",
+          "reviewReason",
+          "revision",
+          "translations"
+        ]
+      },
+      "FacilityPageResponse": {
+        "type": "object",
+        "properties": {
+          "canEdit": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityResponse"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "canEdit",
+          "items",
+          "nextCursor"
+        ]
+      },
+      "FacilityCreateDto": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 500
+          },
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "translations": {
+            "minItems": 1,
+            "maxItems": 3,
+            "description": "One to three translations; at most one per locale (uz, ru, en)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityTranslationDto"
+            }
+          }
+        },
+        "required": [
+          "address",
+          "latitude",
+          "longitude",
+          "translations"
+        ]
+      },
+      "FacilityUpdateDto": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 500
+          },
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "translations": {
+            "minItems": 1,
+            "maxItems": 3,
+            "description": "One to three translations; at most one per locale (uz, ru, en)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityTranslationDto"
+            }
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "address",
+          "latitude",
+          "longitude",
+          "translations",
+          "expectedRevision"
+        ]
+      },
+      "SportTranslationDto": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "enum": [
+              "uz",
+              "ru",
+              "en"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "locale",
+          "name"
+        ]
+      },
+      "SportResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "translations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SportTranslationDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "active",
+          "revision",
+          "translations"
+        ]
+      },
+      "SportPageResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SportResponse"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "SportCreateDto": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "translations": {
+            "minItems": 3,
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SportTranslationDto"
+            }
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          }
+        },
+        "required": [
+          "active",
+          "translations",
+          "slug"
+        ]
+      },
+      "SportUpdateDto": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "translations": {
+            "minItems": 3,
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SportTranslationDto"
+            }
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "active",
+          "translations",
+          "expectedRevision"
         ]
       }
     }

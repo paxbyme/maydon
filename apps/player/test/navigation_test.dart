@@ -1,3 +1,5 @@
+import 'package:maydon_player/sports_catalog.dart';
+import 'package:maydon_api_client/api_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -5,7 +7,13 @@ import 'package:maydon_player/main.dart';
 
 void main() {
   testWidgets('home actions lead to venue and game discovery', (tester) async {
-    final container = ProviderContainer();
+    final container = ProviderContainer(
+      overrides: [
+        sportsLoaderProvider.overrideWithValue(
+          (_) async => const SportPageResponse(items: [], nextCursor: null),
+        ),
+      ],
+    );
     addTearDown(container.dispose);
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const MaydonApp()),
@@ -27,7 +35,13 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
-    final container = ProviderContainer();
+    final container = ProviderContainer(
+      overrides: [
+        sportsLoaderProvider.overrideWithValue(
+          (_) async => const SportPageResponse(items: [], nextCursor: null),
+        ),
+      ],
+    );
     addTearDown(container.dispose);
     for (final width in [390.0, 900.0, 1400.0]) {
       tester.view.physicalSize = Size(width, 900);
@@ -54,7 +68,13 @@ void main() {
     }
   });
   testWidgets('language picker updates all supported locales', (tester) async {
-    final container = ProviderContainer();
+    final container = ProviderContainer(
+      overrides: [
+        sportsLoaderProvider.overrideWithValue(
+          (_) async => const SportPageResponse(items: [], nextCursor: null),
+        ),
+      ],
+    );
     addTearDown(container.dispose);
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const MaydonApp()),
